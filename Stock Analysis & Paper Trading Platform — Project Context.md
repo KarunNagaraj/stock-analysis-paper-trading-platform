@@ -1,0 +1,804 @@
+# Stock Analysis & Paper Trading Platform — Project Context
+
+## 1. Project Purpose
+
+A full-stack stock research and paper-trading platform designed for personal learning and resume demonstration.
+
+The application allows users to:
+- Search for stocks.
+- Screen stocks using fundamental and financial filters.
+- View detailed stock information.
+- Analyze historical price data using interactive candlestick charts.
+- Apply technical indicators.
+- Maintain a watchlist.
+- Create and manage a simulated trading account.
+- Place market, limit, and stop paper-trading orders.
+- Track positions, portfolio value, and realized/unrealized P&L.
+
+### Project Principle
+
+Prioritize:
+1. Explainability
+2. Clear architecture
+3. Maintainable code
+4. Understanding of data flow
+5. Interview-ready implementation
+
+Avoid unnecessary complexity, infrastructure, or abstractions unless they provide a clear learning or architectural benefit.
+
+---
+
+## 2. Tech Stack
+
+### Frontend
+- React
+- Vite
+- JavaScript/TypeScript
+- Tailwind CSS
+- Zustand
+
+### Backend
+- Node.js
+- Express.js
+- REST API
+
+### Database
+- MySQL
+- Prisma
+
+### Charting
+- TradingView Lightweight Charts
+
+### Authentication
+- JWT
+- bcrypt
+
+### Market Data
+- External market-data provider
+
+### Testing
+- Jest
+- Supertest
+- React Testing Library
+
+### Version Control
+- Git
+- GitHub
+
+---
+
+## 3. High-Level Architecture
+
+```text
+React Frontend
+      |
+      | REST API
+      v
+Express Backend
+      |
+      +-- Stock Module
+      +-- Market Data Module
+      +-- Screener Module
+      +-- Fundamentals Module
+      +-- Watchlist Module
+      +-- Paper Trading Module
+      |      +-- Accounts
+      |      +-- Orders
+      |      +-- Trades
+      |      +-- Positions
+      |      +-- Execution Engine
+      |
+      v
+Prisma
+      |
+      v
+MySQL
+
+External Market Data Provider
+      |
+      v
+Market Data Service
+      |
+      v
+Database
+```
+
+### Architectural principle
+
+The frontend does not directly access the database or external market-data provider.
+
+The backend owns:
+- Business logic
+- Data access
+- External API integration
+- Order execution
+- Portfolio calculations
+- Validation
+
+The frontend primarily:
+- Displays state
+- Collects user input
+- Calls APIs
+- Manages UI state
+
+---
+
+## 4. Backend Structure
+
+Organize primarily by feature/domain.
+
+```text
+backend/
+└── src/
+    ├── modules/
+    │   ├── stocks/
+    │   ├── marketData/
+    │   ├── fundamentals/
+    │   ├── screener/
+    │   ├── watchlist/
+    │   └── paperTrading/
+    │
+    ├── database/
+    ├── middleware/
+    ├── config/
+    ├── app.js
+    └── server.js
+```
+
+Typical feature structure:
+
+```text
+feature/
+├── feature.controller.js
+├── feature.service.js
+├── feature.repository.js
+├── feature.routes.js
+└── feature.validation.js
+```
+
+### Responsibility separation
+
+```text
+Controller
+→ Handles HTTP request/response
+
+Service
+→ Contains business logic
+
+Repository
+→ Handles database interaction
+
+Routes
+→ Maps HTTP endpoints to controllers
+
+Validation
+→ Validates incoming data
+```
+
+---
+
+## 5. Frontend Structure
+
+```text
+frontend/
+└── src/
+    ├── pages/
+    ├── features/
+    │   ├── stocks/
+    │   ├── screener/
+    │   ├── chart/
+    │   ├── watchlist/
+    │   └── paperTrading/
+    │
+    ├── components/
+    ├── services/
+    ├── hooks/
+    ├── store/
+    └── utils/
+```
+
+Pages compose features.
+
+Features contain domain-specific UI and logic.
+
+Reusable UI components remain in `components/`.
+
+---
+
+## 6. Core Data Model
+
+### users
+
+```text
+id
+email
+password_hash
+created_at
+```
+
+### stocks
+
+```text
+id
+symbol
+company_name
+exchange
+sector
+industry
+```
+
+### price_history
+
+```text
+id
+stock_id
+timestamp
+open
+high
+low
+close
+volume
+```
+
+### fundamentals
+
+```text
+id
+stock_id
+market_cap
+pe_ratio
+pb_ratio
+eps
+roe
+roce
+profit_margin
+revenue_growth
+profit_growth
+debt_to_equity
+dividend_yield
+updated_at
+```
+
+### watchlists
+
+```text
+id
+user_id
+stock_id
+created_at
+```
+
+### paper_accounts
+
+```text
+id
+user_id
+initial_balance
+cash_balance
+created_at
+updated_at
+```
+
+### orders
+
+```text
+id
+account_id
+stock_id
+side
+order_type
+quantity
+limit_price
+stop_price
+status
+created_at
+executed_at
+```
+
+### trades
+
+```text
+id
+account_id
+order_id
+stock_id
+side
+quantity
+execution_price
+executed_at
+```
+
+### positions
+
+```text
+id
+account_id
+stock_id
+quantity
+average_price
+updated_at
+```
+
+### Important distinction
+
+```text
+Order
+→ User's intention to trade
+
+Trade
+→ Successfully executed order
+
+Position
+→ Current ownership resulting from executed trades
+```
+
+---
+
+## 7. Paper Trading Rules
+
+### Supported order types
+
+```text
+MARKET
+LIMIT
+STOP
+```
+
+### Order states
+
+```text
+PENDING
+EXECUTED
+CANCELLED
+REJECTED
+```
+
+### Position accounting
+
+Use weighted-average cost for V1.
+
+```text
+Average Cost =
+(total cost of existing shares + cost of new shares)
+/
+(total quantity)
+```
+
+### P&L
+
+```text
+Unrealized P&L =
+Current Market Value - Position Cost
+
+Realized P&L =
+Profit/loss from closed positions
+
+Total P&L =
+Realized P&L + Unrealized P&L
+```
+
+### Portfolio value
+
+```text
+Portfolio Value =
+Cash Balance + Current Value of Open Positions
+```
+
+### Important architectural rule
+
+The frontend must never determine whether an order executed.
+
+```text
+Market Data
+     ↓
+Order Execution Engine
+     ↓
+Order State
+     ↓
+Trade
+     ↓
+Position
+     ↓
+Account
+     ↓
+P&L
+     ↓
+Frontend
+```
+
+---
+
+## 8. Initial API Design
+
+### Stocks
+
+```http
+GET /api/stocks
+GET /api/stocks/:symbol
+GET /api/stocks/search?q=
+```
+
+### Market Data
+
+```http
+GET /api/market-data/:symbol/history
+GET /api/market-data/:symbol/latest
+```
+
+### Fundamentals
+
+```http
+GET /api/fundamentals/:symbol
+```
+
+### Screener
+
+```http
+POST /api/screener/search
+```
+
+### Watchlist
+
+```http
+GET /api/watchlist
+POST /api/watchlist/:symbol
+DELETE /api/watchlist/:symbol
+```
+
+### Authentication
+
+```http
+POST /api/auth/register
+POST /api/auth/login
+GET /api/auth/me
+```
+
+### Paper Trading
+
+```http
+GET /api/paper/account
+POST /api/paper/account
+POST /api/paper/account/reset
+
+GET /api/paper/orders
+POST /api/paper/orders
+DELETE /api/paper/orders/:id
+
+GET /api/paper/positions
+GET /api/paper/trades
+GET /api/paper/portfolio
+```
+
+API formats should be refined when each feature is implemented rather than treated as immutable.
+
+---
+
+## 9. Core Features
+
+### Feature 1 — Project Foundation
+Status: NOT STARTED
+
+- [ ] Repository setup
+- [ ] Frontend setup
+- [ ] Backend setup
+- [ ] Database connection
+- [ ] Basic API health check
+- [ ] Frontend ↔ backend connection
+
+---
+
+### Feature 2 — Stock Database & Search
+Status: NOT STARTED
+
+- [ ] Stock schema
+- [ ] Seed stock data
+- [ ] Stock repository
+- [ ] Stock service
+- [ ] Stock controller
+- [ ] Search API
+- [ ] Search UI
+- [ ] Stock result UI
+- [ ] Navigate to stock details
+
+---
+
+### Feature 3 — Stock Details
+Status: NOT STARTED
+
+- [ ] Stock overview API
+- [ ] Stock details page
+- [ ] Company information
+- [ ] Basic price information
+- [ ] Fundamental metrics
+
+---
+
+### Feature 4 — Historical Market Data
+Status: NOT STARTED
+
+- [ ] OHLCV schema
+- [ ] Historical data storage
+- [ ] Market-data repository
+- [ ] Market-data service
+- [ ] Historical data API
+- [ ] Mock market-data provider
+- [ ] Real provider integration
+
+---
+
+### Feature 5 — Interactive Chart
+Status: NOT STARTED
+
+- [ ] Chart component
+- [ ] Candlestick chart
+- [ ] Timeframe selection
+- [ ] Volume
+- [ ] Zoom/pan
+- [ ] Crosshair
+- [ ] Tooltip
+- [ ] Chart data normalization
+
+---
+
+### Feature 6 — Technical Indicators
+Status: NOT STARTED
+
+- [ ] SMA
+- [ ] EMA
+- [ ] RSI
+- [ ] MACD
+- [ ] Bollinger Bands
+- [ ] Indicator toggles
+- [ ] Indicator calculation layer
+
+---
+
+### Feature 7 — Stock Screener
+Status: NOT STARTED
+
+- [ ] Filter model
+- [ ] Filter UI
+- [ ] Dynamic filter request
+- [ ] Screener service
+- [ ] SQL filtering
+- [ ] Sorting
+- [ ] Pagination
+- [ ] Screener results table
+
+Initial filters:
+
+```text
+Market Cap
+P/E
+P/B
+ROE
+ROCE
+Profit Margin
+Revenue Growth
+Profit Growth
+Debt/Equity
+Dividend Yield
+Sector
+Exchange
+```
+
+---
+
+### Feature 8 — Watchlist
+Status: NOT STARTED
+
+- [ ] Watchlist database
+- [ ] Add stock
+- [ ] Remove stock
+- [ ] Watchlist API
+- [ ] Watchlist UI
+
+---
+
+### Feature 9 — Authentication
+Status: NOT STARTED
+
+- [ ] Registration
+- [ ] Password hashing
+- [ ] Login
+- [ ] JWT
+- [ ] Authentication middleware
+- [ ] Protected routes
+- [ ] Frontend auth state
+
+---
+
+### Feature 10 — Paper Trading Account
+Status: NOT STARTED
+
+- [ ] Paper account schema
+- [ ] Create account
+- [ ] Set initial balance
+- [ ] Retrieve account
+- [ ] Reset account
+- [ ] Account UI
+- [ ] Balance calculations
+
+---
+
+### Feature 11 — Market Orders
+Status: NOT STARTED
+
+- [ ] Order schema
+- [ ] Market order API
+- [ ] Order validation
+- [ ] Execution logic
+- [ ] Trade creation
+- [ ] Position creation/update
+- [ ] Cash balance update
+- [ ] Buy UI
+- [ ] Sell UI
+
+---
+
+### Feature 12 — Limit & Stop Orders
+Status: NOT STARTED
+
+- [ ] Limit order logic
+- [ ] Stop order logic
+- [ ] Pending orders
+- [ ] Order execution engine
+- [ ] Order cancellation
+- [ ] Execution state updates
+
+---
+
+### Feature 13 — Portfolio & P&L
+Status: NOT STARTED
+
+- [ ] Positions API
+- [ ] Portfolio API
+- [ ] Current market value
+- [ ] Unrealized P&L
+- [ ] Realized P&L
+- [ ] Total P&L
+- [ ] Return percentage
+- [ ] Portfolio UI
+
+---
+
+### Feature 14 — Chart Trading Integration
+Status: NOT STARTED
+
+- [ ] Entry markers
+- [ ] Exit markers
+- [ ] Pending order markers
+- [ ] Position visualization
+- [ ] Entry price
+- [ ] Stop price
+- [ ] Target price where applicable
+
+---
+
+### Feature 15 — Trade History / Journal
+Status: NOT STARTED
+
+- [ ] Trade history
+- [ ] Closed-position details
+- [ ] Holding period
+- [ ] Optional trade notes
+- [ ] Optional strategy tagging
+
+---
+
+### Feature 16 — Testing & Reliability
+Status: NOT STARTED
+
+- [ ] API tests
+- [ ] Service tests
+- [ ] Order execution tests
+- [ ] P&L calculation tests
+- [ ] Frontend component tests
+- [ ] Error handling
+- [ ] Loading states
+- [ ] Empty states
+
+---
+
+### Feature 17 — Deployment
+Status: NOT STARTED
+
+- [ ] Production environment
+- [ ] Environment variables
+- [ ] Database deployment
+- [ ] Backend deployment
+- [ ] Frontend deployment
+- [ ] Production testing
+
+---
+
+## 10. Development Method
+
+Features must be implemented end-to-end.
+
+Preferred flow:
+
+```text
+Requirement
+    ↓
+Database changes
+    ↓
+Backend model/repository
+    ↓
+Service/business logic
+    ↓
+Controller
+    ↓
+API route
+    ↓
+Frontend API integration
+    ↓
+Frontend feature
+    ↓
+Local testing
+    ↓
+Explain/understand
+    ↓
+Mark feature complete
+```
+
+Cross-cutting concerns should be implemented only to the extent required by the current feature.
+
+Example:
+
+If authentication is required for Watchlist, implement the necessary authentication infrastructure before completing Watchlist rather than building the entire authentication system months earlier.
+
+---
+
+## 11. Implementation Status
+
+Current phase:
+
+**Requirements / Architecture**
+
+Completed:
+- [x] Project concept
+- [x] High-level architecture
+- [x] Requirements
+- [x] Paper-trading requirements
+- [x] Technology stack
+- [x] Initial database model
+- [x] Initial API design
+- [x] Feature roadmap
+
+Current feature:
+
+**Feature 1 — Project Foundation**
+
+Status:
+**NOT STARTED**
+
+---
+
+## 12. Important Design Decisions
+
+1. Use a modular monolith rather than microservices.
+2. Organize backend primarily by domain/feature.
+3. Separate controllers, services, and repositories.
+4. Frontend communicates with backend through REST APIs.
+5. Backend owns business logic.
+6. Database access is isolated from controllers.
+7. External market-data providers are accessed through a market-data service.
+8. Start with mock market data where useful, then integrate a real provider.
+9. Use weighted-average cost for position accounting.
+10. Paper trading is simulation only; no real brokerage execution.
+11. The chart is a major application component rather than a decorative visualization.
+12. Code should favor clarity over clever abstractions.
+13. Every completed feature should be explainable from frontend → backend → database/external service and back.
+14. Do not introduce infrastructure such as Redis, Kafka, Kubernetes, or microservices without a concrete requirement.
+
+---
+
+## 13. Current Known Issues / Decisions Pending
+
+- Final market-data provider has not yet been selected.
+- Exact frontend visual design will be finalized through the UI prototype.
+- Exact Prisma schema will be created during database implementation.
+- API request/response formats may be refined during implementation.
+- Transaction fee/slippage model is not yet finalized.
+- Trade journal remains optional for the first release.
