@@ -1,10 +1,15 @@
 import { Router } from "express";
-import { getAllStocks, searchStocks } from "./stock.controller.js";
+import {
+  getAllStocks,
+  searchStocks,
+  getStockBySymbol,
+} from "./stock.controller.js";
 
 const router = Router();
 
-router.get("/", getAllStocks);
 router.get("/search", searchStocks);
+router.get("/:symbol", getStockBySymbol);
+router.get("/", getAllStocks);
 
 export default router;
 

@@ -1,30 +1,20 @@
-import {useEffect, useState} from 'react';
-import api from './services/api';
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import StockSearch from "./features/stocks/StockSearch";
+import StockDetails from "./features/stocks/StockDetails";
 
 function App() {
-  const [status, setStatus] = useState("chechking backend status...");
-
-  useEffect(() => {
-  const checkBackend = async () => {
-    try {
-      const response = await api.get("/health");
-
-      console.log("Backend response:", response.data);
-
-      setStatus(response.data.status);
-    } catch (error) {
-      console.error("Backend request failed:", error);
-      setStatus("Backend unavailable");
-    }
-  };
-
-  checkBackend();
-}, []);
-
   return (
-    <div>
-      <h1>Backend Status: {status}</h1>
-    </div>
+    <BrowserRouter>
+      <Routes>
+        <Route path="/stocks" element={<StockSearch />} />
+        <Route path="/stocks/:symbol" element={<StockDetails />} />
+
+        <Route
+          path="*"
+          element={<Navigate to="/stocks" replace />}
+        />
+      </Routes>
+    </BrowserRouter>
   );
 }
 

@@ -3,6 +3,7 @@
 import {
   getAllStocks,
   searchStocks,
+  getStockBySymbol,
 } from "./stock.repository.js";
 
 export async function getAllStocksService() {
@@ -11,4 +12,14 @@ export async function getAllStocksService() {
 
 export async function searchStocksService(searchTerm: string) {
   return await searchStocks(searchTerm);
+}
+
+export async function getStockBySymbolService(symbol: string) {
+  const stocks = await getStockBySymbol(symbol);
+
+  if (stocks.length === 0) {
+    throw new Error("Stock not found");
+  }
+
+  return stocks[0];
 }

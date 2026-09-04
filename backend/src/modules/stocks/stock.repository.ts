@@ -31,3 +31,20 @@ export async function searchStocks(searchTerm: string) {
 
   return rows;
 }
+
+export async function getStockBySymbol(symbol: string) {
+  const [rows] = await pool.execute(
+    `SELECT
+       id,
+       symbol,
+       company_name,
+       exchange,
+       sector,
+       industry
+     FROM stocks
+     WHERE symbol = ?`,
+    [symbol]
+  );
+
+  return rows;
+}

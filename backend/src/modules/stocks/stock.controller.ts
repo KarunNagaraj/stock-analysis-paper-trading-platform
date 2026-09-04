@@ -1,5 +1,9 @@
 import { type Request, type Response } from "express";
-import { getAllStocksService, searchStocksService} from "./stock.service.js";
+import {
+  getAllStocksService,
+  searchStocksService,
+  getStockBySymbolService,
+} from "./stock.service.js";
 
 export async function getAllStocks(
   req: Request,
@@ -36,6 +40,34 @@ export async function searchStocks(
 
     res.status(500).json({
       error: "Failed to search stocks",
+    });
+  }
+}
+
+export async function getStockBySymbol(
+  req: Request,
+  res: Response
+) {
+  try {
+    const symbol = req.params.symbol;
+
+    if (!symbol) {
+      res.status(400).json({
+        error: "Stock symbol is required",
+      });
+      return;
+    }
+
+    const stock = await getStockBySymbolService(
+      symbol.toUpperCase()
+    );
+
+    res.json(stock);
+  } catch (error) {
+    console.error("Failed to retrieve stock:", error);
+
+    res.status(404).json({
+      error: "Stock not found",
     });
   }
 }
