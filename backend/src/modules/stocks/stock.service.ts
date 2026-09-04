@@ -14,8 +14,10 @@ export async function searchStocksService(searchTerm: string) {
   return await searchStocks(searchTerm);
 }
 
-export async function getStockBySymbolService(symbol: string) {
-  const stocks = await getStockBySymbol(symbol);
+export async function getStockBySymbolService(symbol: string|string[]) {
+  const normalizedSymbol = symbol.trim().toUpperCase();
+
+  const stocks = await getStockBySymbol(normalizedSymbol);
 
   if (stocks.length === 0) {
     throw new Error("Stock not found");

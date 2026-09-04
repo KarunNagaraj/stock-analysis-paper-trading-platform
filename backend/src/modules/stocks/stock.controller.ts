@@ -58,9 +58,7 @@ export async function getStockBySymbol(
       return;
     }
 
-    const stock = await getStockBySymbolService(
-      symbol.toUpperCase()
-    );
+    const stock = await getStockBySymbolService(symbol);
 
     res.json(stock);
   } catch (error) {
