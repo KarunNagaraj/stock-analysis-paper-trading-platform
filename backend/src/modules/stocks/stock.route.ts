@@ -4,12 +4,14 @@ import {
   searchStocks,
   getStockBySymbol,
 } from "./stock.controller.js";
+import { getHistoricalPrices } from "./historicalPrice.controller.js";
 
 const router = Router();
 
-router.get("/search", searchStocks);
-router.get("/:symbol", getStockBySymbol);
 router.get("/", getAllStocks);
+router.get("/search", searchStocks);
+router.get("/:symbol/history", getHistoricalPrices);
+router.get("/:symbol", getStockBySymbol);
 
 export default router;
 
