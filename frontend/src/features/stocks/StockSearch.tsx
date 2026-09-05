@@ -2,7 +2,8 @@ import { useState } from "react";
 import {
   searchStocks
 } from "../../services/stockService";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+
 
 type Stock = {
   id: number;
@@ -85,32 +86,24 @@ function StockSearch() {
 
       <div className="mt-4 space-y-2">
         {stocks.map((stock) => (
-          <div
-                key={stock.id}
-                onClick={() => navigate(`/stocks/${stock.symbol}`)}
-                className="cursor-pointer rounded-lg border border-gray-200 p-4 hover:bg-gray-50"
-              >
-            <div className="flex items-center justify-between">
-              <div>
-                <h2 className="font-semibold">
-                  {stock.symbol}
-                </h2>
+            <Link
+              key={stock.id}
+              to={`/stocks/${stock.symbol}`}
+              className="block rounded-lg border bg-white p-4 hover:bg-gray-50"
+            >
+              <p className="font-semibold">
+                {stock.symbol}
+              </p>
 
-                <p className="text-gray-700">
-                  {stock.company_name}
-                </p>
-              </div>
+              <p className="text-sm text-gray-600">
+                {stock.company_name}
+              </p>
 
-              <span className="text-sm text-gray-500">
-                {stock.exchange}
-              </span>
-            </div>
-
-            <p className="mt-2 text-sm text-gray-500">
-              {stock.sector} · {stock.industry}
-            </p>
-          </div>
-        ))}
+              <p className="mt-1 text-sm text-gray-500">
+                {stock.exchange} · {stock.sector}
+              </p>
+            </Link>
+          ))}
       </div>
 
      

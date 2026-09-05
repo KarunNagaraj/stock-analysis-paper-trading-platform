@@ -1,7 +1,15 @@
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { getStockBySymbol } from "../../services/stockService";
+/*
+// 1. Create the URL
+<Link to={`/stocks/${stock.symbol}`} />
 
+// 2. Define what URLs should show the component
+<Route path="/stocks/:symbol" element={<StockDetails />} />
+
+// 3. Read the dynamic part of the URL
+const { symbol } = useParams();*/
 type StockDetailsData = {
   id: number;
   symbol: string;
@@ -71,6 +79,26 @@ function Metric({
     </div>
   );
 }
+
+type InfoItemProps = {
+  label: string;
+  value: string | null;
+};
+
+function InfoItem({ label, value }: InfoItemProps) {
+  return (
+    <div>
+      <p className="text-sm text-gray-500">
+        {label}
+      </p>
+
+      <p className="mt-1 font-medium">
+        {value ?? "N/A"}
+      </p>
+    </div>
+  );
+}
+
 function StockDetails() {
   const { symbol } = useParams();
 
@@ -112,26 +140,92 @@ function StockDetails() {
     return <p>Stock not found</p>;
   }
 
-  return (
-    <div className="min-h-screen bg-gray-50 p-8">
-      <h1 className="text-3xl font-bold">
+ return (
+  <div className="min-h-screen bg-gray-50 p-8">
+
+    {/* Stock Header */}
+    <div className="rounded-xl bg-white p-6 shadow-sm">
+      <p className="text-sm font-medium text-gray-500">
+        {stock.exchange}
+      </p>
+
+      <h1 className="mt-1 text-3xl font-bold">
         {stock.symbol}
       </h1>
 
-      <p className="mt-2 text-gray-600">
+      <p className="mt-1 text-lg text-gray-600">
         {stock.company_name}
       </p>
 
-      <p className="mt-1 text-gray-600">
-        {stock.exchange} · {stock.sector} · {stock.industry}
-      </p>
+      <div className="mt-3 flex gap-2 text-sm text-gray-500">
+        <span>{stock.sector}</span>
+        <span>•</span>
+        <span>{stock.industry}</span>
+      </div>
+    </div>
 
-      <div className="mt-8">
-        <h2 className="text-2xl font-semibold">
-          Fundamentals
-        </h2>
-        {hasFundamentals(stock)? (
-          
+
+    {/* Basic Price Information */}
+    <div className="mt-6 rounded-xl bg-white p-6 shadow-sm">
+      <h2 className="text-xl font-semibold">
+        Price
+      </h2>
+
+      <div className="mt-4">
+        <p className="text-sm text-gray-500">
+          Current Price
+        </p>
+
+        <p className="mt-1 text-2xl font-bold">
+          —
+        </p>
+
+        <p className="mt-1 text-sm text-gray-500">
+          Market data will be available in Feature 4.
+        </p>
+      </div>
+    </div>
+
+
+    {/* Company Information */}
+    <div className="mt-6 rounded-xl bg-white p-6 shadow-sm">
+      <h2 className="text-xl font-semibold">
+        Company Information
+      </h2>
+
+      <div className="mt-4 grid grid-cols-2 gap-6 md:grid-cols-4">
+
+        <InfoItem
+          label="Symbol"
+          value={stock.symbol}
+        />
+
+        <InfoItem
+          label="Exchange"
+          value={stock.exchange}
+        />
+
+        <InfoItem
+          label="Sector"
+          value={stock.sector}
+        />
+
+        <InfoItem
+          label="Industry"
+          value={stock.industry}
+        />
+
+      </div>
+    </div>
+
+
+    {/* Fundamentals */}
+    <div className="mt-6 rounded-xl bg-white p-6 shadow-sm">
+      <h2 className="text-xl font-semibold">
+        Fundamentals
+      </h2>
+
+      {hasFundamentals(stock) ? (
         <div className="mt-4 grid grid-cols-2 gap-4 md:grid-cols-4">
 
           <Metric
@@ -190,14 +284,16 @@ function StockDetails() {
             suffix="%"
           />
 
-        </div>) : (
-          <p className="mt-4 text-gray-500">
-            No fundamental data available for this stock.
-          </p>
-        )}
-      </div>
+        </div>
+      ) : (
+        <p className="mt-4 text-gray-500">
+          Fundamental data unavailable.
+        </p>
+      )}
     </div>
-  );
+
+  </div>
+);
 }
 
 export default StockDetails;
