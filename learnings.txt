@@ -56,3 +56,67 @@ const { symbol } = useParams();
                        │
                        ▼
                Display details
+
+
+WORKING OF CANDLESTICK CHART GENERATION:
+User opens:
+
+/stocks/RELIANCE
+        │
+        ▼
+StockDetails renders
+        │
+        ▼
+<HistoricalPriceChart symbol="RELIANCE" />
+        │
+        ▼
+HistoricalPriceChart renders
+        │
+        ├── historicalPrices = []
+        │
+        ├── chartContainerRef.current = null
+        │
+        ▼
+React puts <div> into DOM
+        │
+        ▼
+useEffect([symbol])
+        │
+        ▼
+getHistoricalPrices("RELIANCE")
+        │
+        ▼
+GET /api/stocks/RELIANCE/history
+        │
+        ▼
+Backend → MySQL
+        │
+        ▼
+historical data returned
+        │
+        ▼
+setHistoricalPrices(data)
+        │
+        ▼
+React renders again
+        │
+        ▼
+useEffect([historicalPrices])
+        │
+        ├── find chart <div>
+        │
+        ├── createChart(...)
+        │
+        ├── add CandlestickSeries
+        │
+        ├── normalizeCandlestickData(...)
+        │
+        ├── setData(...)
+        │
+        ├── fitContent()
+        │
+        ▼
+Lightweight Charts renders candles
+        │
+        ▼
+User sees interactive chart

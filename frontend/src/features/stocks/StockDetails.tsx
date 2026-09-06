@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
 import {
   getStockBySymbol,
 } from "../../services/stockService";
@@ -230,11 +230,15 @@ function StockDetails() {
 
       {/* Historical Prices */}
       <div className="mt-6 rounded-xl bg-white p-6 shadow-sm">
+        
         <h2 className="text-xl font-semibold">
           Historical Prices
         </h2>
 
         <HistoricalPriceChart symbol={stock.symbol} />
+        <Link to={`/stocks/${stock.symbol}/chart`} className="mt-4 inline-block rounded-lg bg-black px-4 py-2 text-sm font-medium text-white">
+          Open Full Chart
+        </Link>
       </div>
 
       {/* Fundamentals */}
