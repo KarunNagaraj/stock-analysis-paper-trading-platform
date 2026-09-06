@@ -1,7 +1,9 @@
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { getStockBySymbol } from "../../services/stockService";
-/*
+/* purpose of this file:
+To render the exact stocks details from the list of stocks chosen by the user in StockSearch.tsx
+It uses getParams to extract the specific stock and then uses getStockBySymbol
 // 1. Create the URL
 <Link to={`/stocks/${stock.symbol}`} />
 
@@ -10,6 +12,8 @@ import { getStockBySymbol } from "../../services/stockService";
 
 // 3. Read the dynamic part of the URL
 const { symbol } = useParams();*/
+
+
 type StockDetailsData = {
   id: number;
   symbol: string;

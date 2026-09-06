@@ -4,7 +4,14 @@ import {
 } from "../../services/stockService";
 import { Link, useNavigate } from "react-router-dom";
 
-
+/*This code mainly allows a user to search for stocks by symbol or company name
+by not needing to specify the exact name. It calls searchStocks which is a specific function
+that passes the user input as a query paramter then the backend sql checks by using 'WHERE LIKE %NAME%'
+This then returns a stock or list of stocks as a result which is then mapped in this file as well
+by using Link to the stock details page with each specific stock
+Then router renders based on that and the stock details page renders that specific stock.
+Note that StockDetails will then use getStockBySymbol to get the exact details to render
+*/
 type Stock = {
   id: number;
   symbol: string;

@@ -1,0 +1,58 @@
+1) Url is generated manually in stockSearch.tsx using <Link key={stock.id} to={`/stocks/${stock.symbol}`}>
+2) frontend Router in app.tsx sees that change and renders stockdetails
+3) Strock details extracts that symbol from the url and renders that specific's symbols data by making an api call to backend 
+// 1. Create the URL
+<Link to={`/stocks/${stock.symbol}`} />
+
+// 2. Define what URLs should show the component
+<Route path="/stocks/:symbol" element={<StockDetails />} />
+
+// 3. Read the dynamic part of the URL
+const { symbol } = useParams();
+
+                 StockSearch.tsx
+                       │
+              User types "rel"
+                       │
+                       ▼
+              searchStocks("rel")
+                       │
+                       ▼
+          GET /stocks/search?q=rel
+                       │
+                       ▼
+                    Backend
+                       │
+                       ▼
+              [RELIANCE, ...]
+                       │
+                       ▼
+              User clicks RELIANCE
+                       │
+                       ▼
+       <Link to="/stocks/RELIANCE">
+                       │
+                       ▼
+              React Router
+                       │
+                       ▼
+                StockDetails
+                       │
+                useParams()
+                       │
+                 "RELIANCE"
+                       │
+                       ▼
+          getStockBySymbol("RELIANCE")
+                       │
+                       ▼
+          GET /stocks/RELIANCE
+                       │
+                       ▼
+                    Backend
+                       │
+                       ▼
+             Stock + fundamentals
+                       │
+                       ▼
+               Display details
