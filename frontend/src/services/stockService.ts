@@ -15,3 +15,18 @@ export async function getStockBySymbol(symbol: string) {
 
   return response.data;
 }
+
+export async function getHistoricalPrices(
+  symbol: string,
+  from?: string,
+  to?: string
+) {
+  const response = await api.get(`/stocks/${symbol}/history`, {
+    params: {
+      from,
+      to,
+    },
+  });
+
+  return response.data;
+}

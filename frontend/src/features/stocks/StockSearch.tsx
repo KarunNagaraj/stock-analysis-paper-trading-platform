@@ -4,6 +4,7 @@ import {
 } from "../../services/stockService";
 import { Link, useNavigate } from "react-router-dom";
 
+
 /*This code mainly allows a user to search for stocks by symbol or company name
 by not needing to specify the exact name. It calls searchStocks which is a specific function
 that passes the user input as a query paramter then the backend sql checks by using 'WHERE LIKE %NAME%'

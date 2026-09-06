@@ -1,6 +1,10 @@
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-import { getStockBySymbol } from "../../services/stockService";
+import {
+  getStockBySymbol,
+} from "../../services/stockService";
+import HistoricalPriceChart from "./HistoricalPriceChart";
+
 /* purpose of this file:
 To render the exact stocks details from the list of stocks chosen by the user in StockSearch.tsx
 It uses getParams to extract the specific stock and then uses getStockBySymbol
@@ -11,8 +15,8 @@ It uses getParams to extract the specific stock and then uses getStockBySymbol
 <Route path="/stocks/:symbol" element={<StockDetails />} />
 
 // 3. Read the dynamic part of the URL
-const { symbol } = useParams();*/
-
+const { symbol } = useParams();
+*/
 
 type StockDetailsData = {
   id: number;
@@ -50,6 +54,7 @@ function hasFundamentals(stock: StockDetailsData) {
     stock.dividend_yield,
   ].some((value) => value !== null);
 }
+
 function formatMetric(
   value: string | null,
   suffix = ""
@@ -60,6 +65,7 @@ function formatMetric(
 
   return `${value}${suffix}`;
 }
+
 type MetricProps = {
   label: string;
   value: string | null;
@@ -106,10 +112,11 @@ function InfoItem({ label, value }: InfoItemProps) {
 function StockDetails() {
   const { symbol } = useParams();
 
-  const [stock, setStock] = useState<StockDetailsData | null>(null);
+  const [stock, setStock] =
+    useState<StockDetailsData | null>(null);
+
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-
   useEffect(() => {
     async function loadStockDetails() {
       try {
@@ -144,160 +151,167 @@ function StockDetails() {
     return <p>Stock not found</p>;
   }
 
- return (
-  <div className="min-h-screen bg-gray-50 p-8">
+  return (
+    <div className="min-h-screen bg-gray-50 p-8">
 
-    {/* Stock Header */}
-    <div className="rounded-xl bg-white p-6 shadow-sm">
-      <p className="text-sm font-medium text-gray-500">
-        {stock.exchange}
-      </p>
-
-      <h1 className="mt-1 text-3xl font-bold">
-        {stock.symbol}
-      </h1>
-
-      <p className="mt-1 text-lg text-gray-600">
-        {stock.company_name}
-      </p>
-
-      <div className="mt-3 flex gap-2 text-sm text-gray-500">
-        <span>{stock.sector}</span>
-        <span>•</span>
-        <span>{stock.industry}</span>
-      </div>
-    </div>
-
-
-    {/* Basic Price Information */}
-    <div className="mt-6 rounded-xl bg-white p-6 shadow-sm">
-      <h2 className="text-xl font-semibold">
-        Price
-      </h2>
-
-      <div className="mt-4">
-        <p className="text-sm text-gray-500">
-          Current Price
+      {/* Stock Header */}
+      <div className="rounded-xl bg-white p-6 shadow-sm">
+        <p className="text-sm font-medium text-gray-500">
+          {stock.exchange}
         </p>
 
-        <p className="mt-1 text-2xl font-bold">
-          —
+        <h1 className="mt-1 text-3xl font-bold">
+          {stock.symbol}
+        </h1>
+
+        <p className="mt-1 text-lg text-gray-600">
+          {stock.company_name}
         </p>
 
-        <p className="mt-1 text-sm text-gray-500">
-          Market data will be available in Feature 4.
-        </p>
+        <div className="mt-3 flex gap-2 text-sm text-gray-500">
+          <span>{stock.sector}</span>
+          <span>•</span>
+          <span>{stock.industry}</span>
+        </div>
       </div>
-    </div>
 
 
-    {/* Company Information */}
-    <div className="mt-6 rounded-xl bg-white p-6 shadow-sm">
-      <h2 className="text-xl font-semibold">
-        Company Information
-      </h2>
+      {/* Basic Price Information */}
+      <div className="mt-6 rounded-xl bg-white p-6 shadow-sm">
+        <h2 className="text-xl font-semibold">
+          Price
+        </h2>
 
-      <div className="mt-4 grid grid-cols-2 gap-6 md:grid-cols-4">
+        <div className="mt-4">
+          <p className="text-sm text-gray-500">
+            Current Price
+          </p>
 
-        <InfoItem
-          label="Symbol"
-          value={stock.symbol}
-        />
+          <p className="mt-1 text-2xl font-bold">
+            —
+          </p>
 
-        <InfoItem
-          label="Exchange"
-          value={stock.exchange}
-        />
-
-        <InfoItem
-          label="Sector"
-          value={stock.sector}
-        />
-
-        <InfoItem
-          label="Industry"
-          value={stock.industry}
-        />
-
+          <p className="mt-1 text-sm text-gray-500">
+            Current market price will be available later.
+          </p>
+        </div>
       </div>
-    </div>
 
+      {/* Company Information */}
+      <div className="mt-6 rounded-xl bg-white p-6 shadow-sm">
+        <h2 className="text-xl font-semibold">
+          Company Information
+        </h2>
 
-    {/* Fundamentals */}
-    <div className="mt-6 rounded-xl bg-white p-6 shadow-sm">
-      <h2 className="text-xl font-semibold">
-        Fundamentals
-      </h2>
+        <div className="mt-4 grid grid-cols-2 gap-6 md:grid-cols-4">
 
-      {hasFundamentals(stock) ? (
-        <div className="mt-4 grid grid-cols-2 gap-4 md:grid-cols-4">
-
-          <Metric
-            label="P/E Ratio"
-            value={stock.pe_ratio}
+          <InfoItem
+            label="Symbol"
+            value={stock.symbol}
           />
 
-          <Metric
-            label="P/B Ratio"
-            value={stock.pb_ratio}
+          <InfoItem
+            label="Exchange"
+            value={stock.exchange}
           />
 
-          <Metric
-            label="EPS"
-            value={stock.eps}
+          <InfoItem
+            label="Sector"
+            value={stock.sector}
           />
 
-          <Metric
-            label="ROE"
-            value={stock.roe}
-            suffix="%"
-          />
-
-          <Metric
-            label="ROCE"
-            value={stock.roce}
-            suffix="%"
-          />
-
-          <Metric
-            label="Profit Margin"
-            value={stock.profit_margin}
-            suffix="%"
-          />
-
-          <Metric
-            label="Revenue Growth"
-            value={stock.revenue_growth}
-            suffix="%"
-          />
-
-          <Metric
-            label="Profit Growth"
-            value={stock.profit_growth}
-            suffix="%"
-          />
-
-          <Metric
-            label="Debt / Equity"
-            value={stock.debt_to_equity}
-          />
-
-          <Metric
-            label="Dividend Yield"
-            value={stock.dividend_yield}
-            suffix="%"
+          <InfoItem
+            label="Industry"
+            value={stock.industry}
           />
 
         </div>
-      ) : (
-        <p className="mt-4 text-gray-500">
-          Fundamental data unavailable.
-        </p>
-      )}
-    </div>
+      </div>
 
-  </div>
-);
+      {/* Historical Prices */}
+      <div className="mt-6 rounded-xl bg-white p-6 shadow-sm">
+        <h2 className="text-xl font-semibold">
+          Historical Prices
+        </h2>
+
+        <HistoricalPriceChart symbol={stock.symbol} />
+      </div>
+
+      {/* Fundamentals */}
+      <div className="mt-6 rounded-xl bg-white p-6 shadow-sm">
+        <h2 className="text-xl font-semibold">
+          Fundamentals
+        </h2>
+
+        {hasFundamentals(stock) ? (
+          <div className="mt-4 grid grid-cols-2 gap-4 md:grid-cols-4">
+
+            <Metric
+              label="P/E Ratio"
+              value={stock.pe_ratio}
+            />
+
+            <Metric
+              label="P/B Ratio"
+              value={stock.pb_ratio}
+            />
+
+            <Metric
+              label="EPS"
+              value={stock.eps}
+            />
+
+            <Metric
+              label="ROE"
+              value={stock.roe}
+              suffix="%"
+            />
+
+            <Metric
+              label="ROCE"
+              value={stock.roce}
+              suffix="%"
+            />
+
+            <Metric
+              label="Profit Margin"
+              value={stock.profit_margin}
+              suffix="%"
+            />
+
+            <Metric
+              label="Revenue Growth"
+              value={stock.revenue_growth}
+              suffix="%"
+            />
+
+            <Metric
+              label="Profit Growth"
+              value={stock.profit_growth}
+              suffix="%"
+            />
+
+            <Metric
+              label="Debt / Equity"
+              value={stock.debt_to_equity}
+            />
+
+            <Metric
+              label="Dividend Yield"
+              value={stock.dividend_yield}
+              suffix="%"
+            />
+
+          </div>
+        ) : (
+          <p className="mt-4 text-gray-500">
+            Fundamental data unavailable.
+          </p>
+        )}
+      </div>
+
+    </div>
+  );
 }
 
 export default StockDetails;
