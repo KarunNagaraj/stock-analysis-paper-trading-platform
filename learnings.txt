@@ -120,3 +120,12 @@ Lightweight Charts renders candles
         │
         ▼
 User sees interactive chart
+
+STOCK DETAILS renders the historical price chart which is a smaller version which then renders stock price chart.
+A button is there which links to a full screen chart, When the above link is clicked, it opens a new chart through stock chart 
+Stock chart then renders stock price chart
+// HistoricalPriceChart.tsx
+<StockPriceChart historicalPrices={historicalPrices} height={300} />
+
+// StockChart.tsx
+<StockPriceChart historicalPrices={historicalPrices} height={600} />
