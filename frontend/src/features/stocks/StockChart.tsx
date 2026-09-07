@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
 import { getHistoricalPrices } from "../../services/stockService";
 import StockPriceChart from "./StockPriceChart";
 
@@ -11,7 +11,17 @@ type HistoricalPrice = {
   close_price: string;
   volume: number;
 };
+
 type Timeframe = "1M" | "3M" | "6M" | "1Y" | "ALL";
+
+const timeframes: Timeframe[] = [
+  "1M",
+  "3M",
+  "6M",
+  "1Y",
+  "ALL",
+];
+
 function getFromDate(
   timeframe: Timeframe
 ): string | undefined {
@@ -102,58 +112,57 @@ function StockChart() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-100 p-6">
-      <div className="mx-auto max-w-7xl">
-        <h1 className="text-2xl font-bold">
-          {symbol} Chart
-        </h1>
+  <div className="min-h-screen bg-gray-100 p-6">
+    <div className="mx-auto max-w-7xl">
 
-        <div className="mt-6 rounded-xl bg-white p-6 shadow-sm">
-          <div className="mt-4 flex gap-2">
-            <button
-              onClick={() => setTimeframe("1M")}
-              className="rounded-lg border px-3 py-1 text-sm"
-            >
-              1M
-            </button>
+      <Link
+        to={`/stocks/${symbol}`}
+        className="text-sm text-gray-600 hover:text-gray-900"
+      >
+        ← Back to {symbol}
+      </Link>
 
-            <button
-              onClick={() => setTimeframe("3M")}
-              className="rounded-lg border px-3 py-1 text-sm"
-            >
-              3M
-            </button>
+      <h1 className="mt-2 text-2xl font-bold">
+        {symbol} Chart
+      </h1>
 
-            <button
-              onClick={() => setTimeframe("6M")}
-              className="rounded-lg border px-3 py-1 text-sm"
-            >
-              6M
-            </button>
+      <div className="mt-6 rounded-xl bg-white p-6 shadow-sm">
 
+        <div className="flex gap-2">
+          {timeframes.map((option) => (
             <button
-              onClick={() => setTimeframe("1Y")}
-              className="rounded-lg border px-3 py-1 text-sm"
+              key={option}
+              onClick={() => setTimeframe(option)}
+              className={`rounded-lg border px-3 py-1 text-sm ${
+                timeframe === option
+                  ? "bg-gray-900 text-white"
+                  : "bg-white text-gray-700"
+              }`}
             >
-              1Y
+              {option === "ALL" ? "All" : option}
             </button>
-
-            <button
-              onClick={() => setTimeframe("ALL")}
-              className="rounded-lg border px-3 py-1 text-sm"
-            >
-              All
-            </button>
-          </div>
-          <StockPriceChart
-            historicalPrices={historicalPrices}
-            height={600}
-            showVolume
-          />
+          ))}
         </div>
+
+        <div className="mt-4">
+          {historicalPrices.length === 0 ? (
+            <p className="text-gray-500">
+              No historical data is available for this timeframe.
+            </p>
+          ) : (
+            <StockPriceChart
+              historicalPrices={historicalPrices}
+              height={600}
+              showVolume
+              showTooltip
+            />
+          )}
+        </div>
+
       </div>
     </div>
-  );
+  </div>
+);
 }
 
 export default StockChart;

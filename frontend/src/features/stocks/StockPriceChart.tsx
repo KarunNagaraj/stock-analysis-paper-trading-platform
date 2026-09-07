@@ -1,9 +1,22 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   CandlestickSeries,
   HistogramSeries,
   createChart,
+  CrosshairMode,
+  type ISeriesApi
 } from "lightweight-charts";
+
+type TooltipData = {
+  x: number;
+  y: number;
+  date: string;
+  open: number;
+  high: number;
+  low: number;
+  close: number;
+  volume: number;
+};
 
 type HistoricalPrice = {
   trading_date: string;
@@ -26,6 +39,7 @@ type StockPriceChartProps = {
   historicalPrices: HistoricalPrice[];
   height: number;
   showVolume?: boolean;
+  showTooltip?: boolean;
 };
 
 type VolumeData = {
@@ -53,16 +67,28 @@ function normalizeCandlestickData(
     close: Number(price.close_price),
   }));
 }
+function formatVolume(volume: number): string {
+  if (volume >= 1_000_000) {
+    return `${(volume / 1_000_000).toFixed(2)}M`;
+  }
 
+  if (volume >= 1_000) {
+    return `${(volume / 1_000).toFixed(2)}K`;
+  }
+
+  return volume.toString();
+}
 function StockPriceChart({
   historicalPrices,
   height,
   showVolume = false,
+  showTooltip = false
 }: StockPriceChartProps) {
-  const chartContainerRef =
-    useRef<HTMLDivElement>(null);//Since the chart is being created in useEffect, the actual div dom element has not been created yet, so we need to use a ref to get a reference to the div that will contain the chart. `
+
+  const chartContainerRef = useRef<HTMLDivElement>(null);//Since the chart is being created in useEffect, the actual div dom element has not been created yet, so we need to use a ref to get a reference to the div that will contain the chart. `
       //Component executes → useRef creates current = null → React renders <div> → React connects <div> to ref → chartContainerRef.current → actual <div>`
     
+  const [tooltip, setTooltip] = useState<TooltipData | null>(null);
 
   useEffect(() => {
   if (!chartContainerRef.current) {
@@ -76,20 +102,34 @@ function StockPriceChart({
   const chartContainer = chartContainerRef.current;
 
   const chart = createChart(chartContainer, {
-    width: chartContainer.clientWidth,
-    height,
-  });
+  width: chartContainer.clientWidth,
+  height,
 
-  const candlestickSeries =
-    chart.addSeries(CandlestickSeries);
+  crosshair: {
+    mode: CrosshairMode.Magnet,
 
-  const candleData =
-    normalizeCandlestickData(historicalPrices);
+    vertLine: {
+      visible: true,
+      labelVisible: true,
+    },
+
+    horzLine: {
+      visible: true,
+      labelVisible: true,
+    },
+  },
+});
+
+  const candlestickSeries = chart.addSeries(CandlestickSeries);
+
+  const candleData = normalizeCandlestickData(historicalPrices);
 
   candlestickSeries.setData(candleData);
 
+  let volumeSeries: ISeriesApi<"Histogram"> | undefined;
+
   if (showVolume) {
-  const volumeSeries = chart.addSeries(
+  volumeSeries = chart.addSeries(
     HistogramSeries,
     {
       priceFormat: {
@@ -99,8 +139,7 @@ function StockPriceChart({
     1
   );
 
-  const volumeData =
-    normalizeVolumeData(historicalPrices);
+  const volumeData = normalizeVolumeData(historicalPrices);
 
   volumeSeries.setData(volumeData);
 
@@ -111,6 +150,46 @@ function StockPriceChart({
   panes[1]?.setStretchFactor(0.15);
 }
 
+if (showTooltip) {
+  chart.subscribeCrosshairMove((param) => { //Lightweight Charts gives our callback an object containing information about the crosshair event.
+    if (
+      !param.point || //The param object contains details about the x,y coordinates of the crosshair
+      !param.time || //This relates to the time/date of the x axis of crosshair
+      !param.seriesData //This contains the OHLC data as candlestickSeries and volume data as volumeSeries.
+    ) {
+      setTooltip(null);
+      return;
+    }
+
+    const candle = param.seriesData.get(candlestickSeries) as | CandlestickData| undefined;
+
+    if (!candle) {
+      setTooltip(null);
+      return;
+    }
+
+    let volume = 0;
+
+    if (volumeSeries) {
+      const volumeData = param.seriesData.get(volumeSeries) as | VolumeData| undefined;
+
+      if (volumeData) {
+        volume = volumeData.value;
+      }
+    }
+
+    setTooltip({
+      x: param.point.x,
+      y: param.point.y,
+      date: candle.time,
+      open: candle.open,
+      high: candle.high,
+      low: candle.low,
+      close: candle.close,
+      volume,
+    });
+  });
+}
   chart.timeScale().fitContent();
 
   const resizeObserver = new ResizeObserver(() => {
@@ -126,14 +205,100 @@ function StockPriceChart({
     resizeObserver.disconnect();
     chart.remove();
   };
-}, [historicalPrices, height,showVolume]);
+}, [historicalPrices, height,showVolume,showTooltip]);
 
   return (
-    <div
-      ref={chartContainerRef}
-      className="w-full"
-    />
-  );
+  <div
+    ref={chartContainerRef}
+    className="relative w-full"
+  >
+    {showTooltip && tooltip && (
+      <div
+        className="pointer-events-none absolute z-10 rounded-lg bg-white p-3 text-sm shadow-lg"
+        style={{
+          left: tooltip.x + 15,
+          top: tooltip.y + 15,
+        }}
+      >
+        <div className="font-semibold">
+          {tooltip.date}
+        </div>
+
+        <div className="mt-2 space-y-1">
+          <div>
+            Open: {tooltip.open.toFixed(2) /* converts to string */}
+          </div>
+
+          <div>
+            High: {tooltip.high.toFixed(2)}
+          </div>
+
+          <div>
+            Low: {tooltip.low.toFixed(2)}
+          </div>
+
+          <div>
+            Close: {tooltip.close.toFixed(2)}
+          </div>
+
+          <div>
+            Volume: {formatVolume(tooltip.volume)}
+          </div>
+        </div>
+      </div>
+    )}
+  </div>
+);
 }
 
 export default StockPriceChart;
+
+/*                    USER
+                      │
+                      │ moves mouse
+                      ▼
+             Lightweight Charts
+                      │
+                      │ crosshair moves
+                      ▼
+        subscribeCrosshairMove(callback)
+                      │
+                      │ gives `param`
+                      ▼
+             ┌─────────────────┐
+             │      param      │
+             │                 │
+             │ point           │──── x/y
+             │ time            │
+             │ seriesData      │──── candle/volume
+             └─────────────────┘
+                      │
+                      ▼
+              Extract candle
+                      │
+              ┌───────┴────────┐
+              ▼                ▼
+          OHLC data          volume
+              │                │
+              └───────┬────────┘
+                      ▼
+               setTooltip(...)
+                      │
+                      ▼
+                React state
+                      │
+                      ▼
+                 re-render
+                      │
+                      ▼
+        showTooltip && tooltip
+                      │
+                      ▼
+              Render <div>
+                      │
+                      ▼
+             left: x + 15
+             top:  y + 15
+                      │
+                      ▼
+                TOOLTIP*/

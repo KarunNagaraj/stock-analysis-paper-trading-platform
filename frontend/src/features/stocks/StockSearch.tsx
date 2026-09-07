@@ -2,7 +2,7 @@ import { useState } from "react";
 import {
   searchStocks
 } from "../../services/stockService";
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 
 
 /*This code mainly allows a user to search for stocks by symbol or company name
@@ -27,7 +27,7 @@ function StockSearch() {
   const [stocks, setStocks] = useState<Stock[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  const navigate = useNavigate();
+  
 
   const handleSearch = async () => {
     if (searchTerm.trim() === "") {
