@@ -6,7 +6,7 @@ export async function getPricesForDate(date: string) {
     SELECT
       s.symbol,
       s.company_name,
-      hp.trading_date,
+      DATE_FORMAT(hp.trading_date, '%Y-%m-%d') AS trading_date,
       hp.close_price
     FROM historical_prices hp
     JOIN stocks s
@@ -22,7 +22,8 @@ export async function getPricesForDate(date: string) {
 export async function getPreviousTradingDate(date: string) {
   const [rows] = await pool.execute(
     `
-    SELECT MAX(trading_date) AS trading_date
+    SELECT
+      DATE_FORMAT(MAX(trading_date), '%Y-%m-%d') AS trading_date
     FROM historical_prices
     WHERE trading_date < ?
     `,
@@ -41,7 +42,7 @@ export async function getPricesBetweenDates(
     SELECT
       s.symbol,
       s.company_name,
-      hp.trading_date,
+      DATE_FORMAT(hp.trading_date, '%Y-%m-%d') AS trading_date,
       hp.close_price
     FROM historical_prices hp
     JOIN stocks s

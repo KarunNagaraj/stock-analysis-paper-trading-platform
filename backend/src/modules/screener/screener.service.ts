@@ -152,6 +152,16 @@ async function runPeriodScreener(
   date: string,
   limit: number
 ) {
+  // Make sure the selected date itself
+  // is a trading date with market data.
+  const selectedDatePrices =
+    await getPricesForDate(date);
+
+  if (selectedDatePrices.length === 0) {
+    throw new Error(
+      "No market data available for the selected date"
+    );
+  }
   let from: string;
   let to: string;
 
