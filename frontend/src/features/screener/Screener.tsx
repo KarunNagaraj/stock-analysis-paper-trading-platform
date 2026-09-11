@@ -1,6 +1,11 @@
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { getScreenerResults,getScreenerDateRange } from "../../services/screenerService";
+
+import {
+  getScreenerResults,
+  getScreenerDateRange,
+} from "../../services/screenerService";
+
 import type {
   ScreenerPeriod,
   ScreenerType,
@@ -31,66 +36,68 @@ function Screener() {
     useState("");
 
   const [minDate, setMinDate] =
-  useState("");
+    useState("");
 
-const [maxDate, setMaxDate] =
-  useState("");
+  const [maxDate, setMaxDate] =
+    useState("");
 
-const [dateLoading, setDateLoading] =
-  useState(true);
+  const [dateLoading, setDateLoading] =
+    useState(true);
 
   useEffect(() => {
-  async function loadDateRange() {
-    try {
-      const data =
-        await getScreenerDateRange();
+    async function loadDateRange() {
+      try {
+        const data =
+          await getScreenerDateRange();
 
-      setMinDate(data.min_date);
-      setMaxDate(data.max_date);
-
-      setDate(data.max_date);
-    } catch {
-      setError(
-        "Failed to load historical date range"
-      );
-    } finally {
-      setDateLoading(false);
+        setMinDate(data.min_date);
+        setMaxDate(data.max_date);
+        setDate(data.max_date);
+      } catch {
+        setError(
+          "Failed to load historical date range"
+        );
+      } finally {
+        setDateLoading(false);
+      }
     }
-  }
 
-  loadDateRange();
-}, []);
+    loadDateRange();
+  }, []);
 
-
-  async function handleRunScreener() {
+  useEffect(() => {
     if (!date) {
-      setError("Please select a date");
       return;
     }
 
-    try {
-      setLoading(true);
-      setError("");
+    async function runScreener() {
+      try {
+        setLoading(true);
+        setError("");
 
-      const data = await getScreenerResults(
-        period,
-        type,
-        date,
-        limit
-      );
+        const data =
+          await getScreenerResults(
+            period,
+            type,
+            date,
+            limit
+          );
 
-      setResults(data);
-    } catch (error: any) {
-      setResults([]);
+        setResults(data);
+      } catch (error: any) {
+        setResults([]);
 
-      setError(
-        error.response?.data?.error ||
-          "Failed to run screener"
-      );
-    } finally {
-      setLoading(false);
+        setError(
+          error.response?.data?.error ||
+            "Failed to run screener"
+        );
+      } finally {
+        setLoading(false);
+      }
     }
-  }
+
+    runScreener();
+  }, [period, type, date, limit]);
 
   return (
     <div className="p-6">
@@ -144,16 +151,16 @@ const [dateLoading, setDateLoading] =
           </label>
 
           <input
-              type="date"
-              value={date}
-              min={minDate}
-              max={maxDate}
-              disabled={dateLoading}
-              onChange={(event) =>
-                setDate(event.target.value)
-              }
-              className="rounded border p-2"
-            />
+            type="date"
+            value={date}
+            min={minDate}
+            max={maxDate}
+            disabled={dateLoading}
+            onChange={(event) =>
+              setDate(event.target.value)
+            }
+            className="rounded border p-2"
+          />
         </div>
 
         <div>
@@ -177,16 +184,14 @@ const [dateLoading, setDateLoading] =
         </div>
       </div>
 
-      <button
-        onClick={handleRunScreener}
-        disabled={loading}
-        className="rounded bg-black px-4 py-2 text-white disabled:opacity-50"
-      >
-        {loading ? "Loading..." : "Run Screener"}
-      </button>
+      {loading && (
+        <p className="mb-4">
+          Loading...
+        </p>
+      )}
 
       {error && (
-        <p className="mt-4 text-red-600">
+        <p className="mb-4 text-red-600">
           {error}
         </p>
       )}
@@ -195,40 +200,55 @@ const [dateLoading, setDateLoading] =
         !error &&
         results.length === 0 &&
         date && (
-          <p className="mt-4">
+          <p className="mb-4">
             No results found.
           </p>
         )}
 
       {results.length > 0 && (
-        <div className="mt-6 overflow-x-auto">
+        <div className="overflow-x-auto rounded-lg border">
           <table className="w-full border-collapse">
             <thead>
               <tr className="border-b">
                 <th className="p-3 text-left">
                   #
                 </th>
+
                 <th className="p-3 text-left">
                   Symbol
                 </th>
+
                 <th className="p-3 text-left">
                   Company
                 </th>
+
                 <th className="p-3 text-right">
                   Start Price
                 </th>
+
                 <th className="p-3 text-right">
                   End Price
                 </th>
+
                 <th className="p-3 text-right">
                   Change
                 </th>
-                <th className="p-3 text-left">
-                  Start Date
-                </th>
-                <th className="p-3 text-left">
-                  End Date
-                </th>
+
+                {period === "daily" ? (
+                  <th className="p-3 text-left">
+                    Date
+                  </th>
+                ) : (
+                  <>
+                    <th className="p-3 text-left">
+                      Start Date
+                    </th>
+
+                    <th className="p-3 text-left">
+                      End Date
+                    </th>
+                  </>
+                )}
               </tr>
             </thead>
 
@@ -243,7 +263,10 @@ const [dateLoading, setDateLoading] =
                   </td>
 
                   <td className="p-3 font-medium">
-                    <Link to={`/stocks/${stock.symbol}`}>
+                    <Link
+                      to={`/stocks/${stock.symbol}`}
+                      className="underline"
+                    >
                       {stock.symbol}
                     </Link>
                   </td>
@@ -264,13 +287,21 @@ const [dateLoading, setDateLoading] =
                     {stock.percentage_change.toFixed(2)}%
                   </td>
 
-                  <td className="p-3">
-                    {stock.start_date}
-                  </td>
+                  {period === "daily" ? (
+                    <td className="p-3">
+                      {stock.trading_date}
+                    </td>
+                  ) : (
+                    <>
+                      <td className="p-3">
+                        {stock.start_date}
+                      </td>
 
-                  <td className="p-3">
-                    {stock.end_date}
-                  </td>
+                      <td className="p-3">
+                        {stock.end_date}
+                      </td>
+                    </>
+                  )}
                 </tr>
               ))}
             </tbody>

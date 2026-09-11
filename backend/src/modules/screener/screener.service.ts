@@ -128,7 +128,17 @@ async function runDailyScreener(
         trading_date: date,
       };
     })
-    .filter((result) => result !== null); //remove null values from the results array. This is necessary because some stocks may not have a previous price, and we don't want to include those in the final results.
+    .filter((result) => {
+      if (result === null) {
+        return false;
+      }
+
+      if (type === "gainers") {
+        return result.percentage_change > 0;
+      }
+
+      return result.percentage_change < 0;
+    });
 
   results.sort((a, b) => {  //sort the results array based on percentage change. If type is gainers, sort in descending order largest to smallest, else if losers sort in ascending order, -5% to +5% for example.
     if (type === "gainers") {
@@ -221,18 +231,26 @@ async function runPeriodScreener(
 
   const results = Array.from(
     stockPrices.values()
-  ).map((stock) => ({
-    symbol: stock.symbol,
-    company_name: stock.company_name,
-    start_price: stock.start_price,
-    end_price: stock.end_price,
-    percentage_change: calculatePercentageChange(
-      stock.start_price,
-      stock.end_price
-    ),
-    start_date: stock.start_date,
-    end_date: stock.end_date,
-  }));
+  )
+    .map((stock) => ({
+      symbol: stock.symbol,
+      company_name: stock.company_name,
+      start_price: stock.start_price,
+      end_price: stock.end_price,
+      percentage_change: calculatePercentageChange(
+        stock.start_price,
+        stock.end_price
+      ),
+      start_date: stock.start_date,
+      end_date: stock.end_date,
+    }))
+    .filter((result) => {
+      if (type === "gainers") {
+        return result.percentage_change > 0;
+      }
+
+      return result.percentage_change < 0;
+    });
 
   results.sort((a, b) => {
     if (type === "gainers") {

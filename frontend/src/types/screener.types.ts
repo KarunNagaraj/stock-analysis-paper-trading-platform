@@ -18,6 +18,7 @@ export interface ScreenerResult {
   start_price: number;
   end_price: number;
   percentage_change: number;
-  start_date: string;
-  end_date: string;
+  trading_date?: string;
+  start_date?: string;
+  end_date?: string;
 }
