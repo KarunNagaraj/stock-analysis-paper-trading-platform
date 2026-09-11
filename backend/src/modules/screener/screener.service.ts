@@ -2,6 +2,7 @@ import {
   getPricesForDate,
   getPreviousTradingDate,
   getPricesBetweenDates,
+  getHistoricalDateRange
 } from "./screener.repository.js";
 
 import type {
@@ -256,4 +257,7 @@ async function runPeriodScreener(
     For each stock, we copy its symbol, company name, starting price, ending price, start date, and end date, while also calculating its `percentage_change` using the starting and ending prices. 
     The final `results` variable is therefore an array of complete screener results, with one object per stock.*/
 
+}
+export async function getScreenerDateRange() {
+  return await getHistoricalDateRange();
 }

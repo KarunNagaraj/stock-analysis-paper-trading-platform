@@ -1,9 +1,10 @@
 import { Router } from "express";
-import { getScreenerResults } from "./screener.controller.js";
+import { getScreenerDateRangeController, getScreenerResults } from "./screener.controller.js";
 
 const router = Router();
 
 router.get("/", getScreenerResults);
+router.get("/date-range", getScreenerDateRangeController);
 
 export default router;
 /*GET /api/screener

@@ -3,7 +3,7 @@ import {
   type Response,
 } from "express";
 
-import { runScreener } from "./screener.service.js";
+import { runScreener,getScreenerDateRange } from "./screener.service.js";
 
 import {
   validateScreenerParams,
@@ -61,6 +61,20 @@ export async function getScreenerResults(
 
     res.status(500).json({
       error: "Failed to run screener",
+    });
+  }
+}
+
+export async function getScreenerDateRangeController(
+  req: Request,
+  res: Response
+) {
+  try {
+    const dateRange = await getScreenerDateRange();
+    res.json(dateRange);
+  } catch (error) {
+    res.status(500).json({
+      error: "Failed to fetch screener date range",
     });
   }
 }

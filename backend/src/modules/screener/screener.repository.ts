@@ -55,3 +55,16 @@ export async function getPricesBetweenDates(
 
   return rows;
 }
+
+export async function getHistoricalDateRange() {
+  const [rows] = await pool.execute(
+    `
+    SELECT
+      DATE_FORMAT(MIN(trading_date), '%Y-%m-%d') AS min_date,
+      DATE_FORMAT(MAX(trading_date), '%Y-%m-%d') AS max_date
+    FROM historical_prices
+    `
+  );
+
+  return rows;
+}
