@@ -129,3 +129,47 @@ Stock chart then renders stock price chart
 
 // StockChart.tsx
 <StockPriceChart historicalPrices={historicalPrices} height={600} />
+
+                 REGISTER
+                    │
+                    ▼
+              create user
+                    │
+                    ▼
+              bcrypt hash
+                    │
+                    ▼
+                 MySQL
+
+
+                  LOGIN
+                    │
+                    ▼
+            find user by email
+                    │
+                    ▼
+            bcrypt.compare()
+                    │
+                    ▼
+            generate JWT
+                    │
+                    ▼
+              return token
+
+
+          PROTECTED REQUEST
+                    │
+                    ▼
+         Authorization: Bearer JWT
+                    │
+                    ▼
+        authenticateToken()
+                    │
+                    ▼
+             jwt.verify()
+                    │
+                    ▼
+              req.user
+                    │
+                    ▼
+              Controller
