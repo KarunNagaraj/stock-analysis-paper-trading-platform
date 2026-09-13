@@ -1,17 +1,13 @@
 import { NextFunction, Request, Response } from "express";
-import jwt from "jsonwebtoken";
+import jwt, { JwtPayload } from "jsonwebtoken";
 import { AuthenticatedUser } from "./auth.types";
 
-const JWT_SECRET = process.env.JWT_SECRET;
-
-if (!JWT_SECRET) {
+//explicitly establish the type: that it is string and not undefined, if it is undefined throw an error
+const JWT_SECRET: string = process.env.JWT_SECRET ?? (() => {
     throw new Error("JWT_SECRET is not configured");
-}
+})();
 
-interface JwtPayload {
-    userId: number;
-    email: string;
-}
+
 
 export function authenticateToken(
     req: Request,
@@ -35,17 +31,27 @@ export function authenticateToken(
         });
         return;
     }
-
+    
     try {
-        const decoded = jwt.verify(
-            token,
-            JWT_SECRET
-        ) as JwtPayload;
+         const decoded = jwt.verify(token, JWT_SECRET);
+
+         //"Reject the request if ANYTHING about the decoded payload is not what we expect."
+      if (
+            typeof decoded === "string" ||
+            typeof decoded.userId !== "number" ||
+            typeof decoded.email !== "string"
+        ) {
+            res.status(401).json({
+                message: "Invalid token payload",
+            });
+            return;
+        }
 
         const authenticatedUser: AuthenticatedUser = {
             id: decoded.userId,
             email: decoded.email,
         };
+ 
 
         req.user = authenticatedUser;
 

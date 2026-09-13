@@ -94,6 +94,11 @@ export async function getUserById(
 
     return toPublicUser(user);
 }
+/*The email and ID serve different purposes. The email is a user-facing identifier:
+ it is something the user knows and uses to register and log in. That's why findUserByEmail() is useful during authentication—you receive an email from the login request and need to find the corresponding user. 
+ The id, on the other hand, is the database's stable internal identifier. Once we've found the user, we use the id to identify that user throughout the rest of the system.
+ For example, a watchlist row will eventually have user_id = 17, rather than storing the user's email. IDs are better for database relationships because they are stable, compact, and don't change if a user changes their email.*/
+ 
 /* There are two important bcrypt operations we'll use:
 
 bcrypt.hash()

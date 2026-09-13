@@ -95,6 +95,10 @@ export async function me(
         });
     }
 }
+/*The purpose of /api/auth/me is to let the frontend ask the backend, "Who am I currently authenticated as?"
+The frontend sends the JWT, the middleware verifies it and extracts the user ID, and /me uses that ID to retrieve the user's current information from the database. 
+This is particularly useful when the application starts or refreshes: 
+the frontend can send its token to /me and determine whether the user is still authenticated and which account they're logged into. It also avoids making the frontend treat the information stored in the JWT as the complete source of truth.*/
 /*                 LOGIN
                    │
                    ▼

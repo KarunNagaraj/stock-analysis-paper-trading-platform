@@ -173,3 +173,124 @@ Stock chart then renders stock price chart
                     │
                     ▼
               Controller
+
+complete registration flow:
+                         HTTP
+                           │
+                           ▼
+                  auth.route.ts
+                           │
+                           ▼
+                auth.controller.ts
+                           │
+                           ▼
+                  registerUser()
+                           │
+              ┌────────────┴────────────┐
+              │                         │
+         validation              findUserByEmail
+              │                         │
+              │                         ▼
+              │                       MySQL
+              │
+              ▼
+        bcrypt.hash()
+              │
+              ▼
+          createUser()
+              │
+              ▼
+            MySQL
+              │
+              ▼
+        findUserById()
+              │
+              ▼
+            MySQL
+              │
+              ▼
+        toPublicUser()
+              │
+              ▼
+          controller
+              │
+              ▼
+         HTTP 201
+
+
+complete login flow:
+POST /api/auth/login
+        │
+        ▼
+ auth.route.ts
+        │
+        ▼
+ auth.controller.ts
+        │
+        ▼
+authenticateUser()
+        │
+        ├── validate
+        │
+        ├── findUserByEmail()
+        │
+        └── bcrypt.compare()
+                │
+                ▼
+         credentials valid
+                │
+                ▼
+       AuthenticatedUser
+                │
+                ▼
+        generateToken()
+                │
+                ▼
+              JWT
+                │
+                ▼
+          controller
+                │
+                ▼
+         HTTP 200
+
+
+                    createContext()
+                         │
+                         ▼
+                   AuthContext
+                         │
+                         │
+                AuthContext.Provider
+                         │
+                    value={...}
+                         │
+                         ▼
+                       App
+                    /       \
+                   /         \
+              Navbar       StockPage
+                 │              │
+                 │              │
+              useAuth()      useAuth()
+                 │              │
+                 └──────┬───────┘
+                        │
+                        ▼
+                  AuthContext value
+value is {
+    user,
+    isLoading,
+    login,
+    register,
+    logout
+}
+
+React Context is a way to share data with multiple components without manually passing it through every component as props. 
+createContext() creates a shared container called AuthContext. AuthContext.Provider is the component that puts a value into that container and makes it available to all components inside it. 
+In our case, the value is an object containing user, isLoading, login, register, and logout.
+
+children simply refers to whatever components are placed inside another component. 
+So when we eventually write <AuthProvider><App /></AuthProvider>, <App /> is the children of AuthProvider. children: ReactNode is just TypeScript saying that the children can be any valid React content. 
+useContext(AuthContext) allows a component to retrieve the value currently provided by AuthContext. 
+Finally, useAuth() is our own convenient wrapper around useContext(AuthContext), allowing components to simply write const { user, logout } = useAuth() instead of directly dealing with the Context.
