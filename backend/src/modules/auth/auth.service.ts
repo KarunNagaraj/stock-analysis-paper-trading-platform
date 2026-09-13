@@ -32,7 +32,10 @@ function toPublicUser(user: {
 
 export async function registerUser(
     input: RegisterInput
-): Promise<PublicUser> {
+): Promise<{
+    user: PublicUser;
+    authenticatedUser: AuthenticatedUser;
+}> {
     validateRegisterInput(input);
 
     const existingUser = await findUserByEmail(input.email);
@@ -54,7 +57,13 @@ export async function registerUser(
         throw new Error("Failed to retrieve created user");
     }
 
-    return toPublicUser(user); //ensures we don't accidentally send password_hash to the frontend.
+    return {
+        user: toPublicUser(user),
+        authenticatedUser: {
+            id: user.id,
+            email: user.email,
+        },
+    };
 }
 
 export async function authenticateUser(

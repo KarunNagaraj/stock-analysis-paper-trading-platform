@@ -294,3 +294,84 @@ children simply refers to whatever components are placed inside another componen
 So when we eventually write <AuthProvider><App /></AuthProvider>, <App /> is the children of AuthProvider. children: ReactNode is just TypeScript saying that the children can be any valid React content. 
 useContext(AuthContext) allows a component to retrieve the value currently provided by AuthContext. 
 Finally, useAuth() is our own convenient wrapper around useContext(AuthContext), allowing components to simply write const { user, logout } = useAuth() instead of directly dealing with the Context.
+
+POST /api/auth/register
+        ↓
+Controller
+        ↓
+registerUser()
+        ↓
+validate input
+        ↓
+check email
+        ↓
+bcrypt hash
+        ↓
+INSERT users
+        ↓
+retrieve created user
+        ↓
+PublicUser + AuthenticatedUser
+        ↓
+generateToken()
+        ↓
+{ user, token }
+        ↓
+Frontend
+        ↓
+localStorage ← token
+React state  ← user
+
+
+
+POST /api/auth/login
+        ↓
+Controller
+        ↓
+authenticateUser()
+        ↓
+find user
+        ↓
+bcrypt.compare()
+        ↓
+AuthenticatedUser
+        ↓
+generateToken()
+        ↓
+{ user, token }
+        ↓
+Frontend
+        ↓
+localStorage ← token
+React state  ← user
+
+
+React application starts
+        ↓
+AuthProvider
+        ↓
+getToken()
+        ↓
+JWT exists?
+   ↙          ↘
+ no            yes
+ ↓              ↓
+not logged    GET /auth/me
+                 ↓
+            Axios interceptor
+                 ↓
+          Authorization: Bearer JWT
+                 ↓
+          authenticateToken
+                 ↓
+             jwt.verify()
+                 ↓
+              req.user
+                 ↓
+              /me controller
+                 ↓
+            database lookup
+                 ↓
+             current user
+                 ↓
+          setUser(currentUser)

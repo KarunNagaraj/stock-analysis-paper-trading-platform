@@ -6,7 +6,7 @@ import {
     ReactNode,
 } from "react";
 
-import {
+import type {
     LoginInput,
     RegisterInput,
     User,
@@ -80,9 +80,10 @@ export function AuthProvider({
     async function register(
         input: RegisterInput
     ): Promise<void> {
-        const registeredUser = await registerRequest(input);
+        const response = await registerRequest(input);
 
-        setUser(registeredUser);
+        setToken(response.token);
+        setUser(response.user);
     }
 
     function logout(): void {

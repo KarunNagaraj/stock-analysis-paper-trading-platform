@@ -17,10 +17,12 @@ export async function register(
     try {
         const input: RegisterInput = req.body;
 
-        const user = await registerUser(input);
+        const result = await registerUser(input);
+        const token = generateToken(result.authenticatedUser);
 
         res.status(201).json({
-            user,
+            user: result.user,
+            token,
         });
     } catch (error) {
         const message =
