@@ -59,6 +59,7 @@ export async function login(
         res.status(401).json({
             message,
         });
+        console.error("Login error:", message);
     }
 }
 

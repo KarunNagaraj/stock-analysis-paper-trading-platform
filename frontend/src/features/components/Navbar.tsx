@@ -37,6 +37,13 @@ function Navbar() {
                             Screener
                         </Link>
 
+                        <Link
+                            to="/paper-trading"
+                            className="text-sm font-medium text-gray-700 hover:text-blue-600"
+                        >
+                            Paper Trading
+                        </Link>
+
                         <span className="text-sm text-gray-500">
                             {user.email}
                         </span>

@@ -7,6 +7,7 @@ import Login from "./features/components/register-login/Login";
 import Register from "./features/components/register-login/Register";
 import ProtectedRoute from "./features/auth/ProtectedRoute";
 import Navbar from "./features/components/Navbar";
+import PaperTradingAccount from "./features/paperTrading/PaperTradingAccount";
 
 //Link changes the url without reloading the page and browserRouter uses routes to render the component based on the url. Navigate is used to redirect the user to a different route.
 function App() {
@@ -26,6 +27,11 @@ function App() {
         <Route
             path="/screener"
             element={<Screener />}
+        />
+
+        <Route
+          path="/paper-trading"
+          element={<PaperTradingAccount />}
         />
 
         <Route
