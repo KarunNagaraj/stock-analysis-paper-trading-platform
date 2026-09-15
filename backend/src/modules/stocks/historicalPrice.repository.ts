@@ -14,7 +14,10 @@ export async function getStockHistoryStatus(symbol: string) {
       s.id,
       s.symbol,
       s.provider_symbol,
-      MAX(hp.trading_date) AS latest_date
+      DATE_FORMAT(
+        MAX(hp.trading_date),
+        '%Y-%m-%d'
+      ) AS latest_date
     FROM stocks s
     LEFT JOIN historical_prices hp
       ON hp.stock_id = s.id
@@ -28,6 +31,31 @@ export async function getStockHistoryStatus(symbol: string) {
   ) as unknown as [StockHistoryStatus[], unknown];
 
   return rows[0] ?? null;
+}
+
+export async function getAllStocksHistoryStatus() {
+  const [rows] = await pool.execute(`
+    SELECT
+      s.id,
+      s.symbol,
+      s.provider_symbol,
+      MAX(hp.trading_date) AS latest_date
+    FROM stocks s
+    LEFT JOIN historical_prices hp
+      ON hp.stock_id = s.id
+    GROUP BY
+      s.id,
+      s.symbol,
+      s.provider_symbol
+    ORDER BY s.id
+  `) as unknown as [{
+    id: number;
+    symbol: string;
+    provider_symbol: string | null;
+    latest_date: string | Date | null;
+  }[], unknown];
+
+  return rows;
 }
 
 export async function insertHistoricalPrices(
@@ -90,7 +118,7 @@ export async function getHistoricalPrices(
 ) {
   let query = `
     SELECT
-      hp.trading_date,
+      DATE_FORMAT(hp.trading_date, '%Y-%m-%d') AS trading_date,
       hp.open_price,
       hp.high_price,
       hp.low_price,

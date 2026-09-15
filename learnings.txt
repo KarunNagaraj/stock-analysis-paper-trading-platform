@@ -375,3 +375,73 @@ not logged    GET /auth/me
              current user
                  ↓
           setUser(currentUser)
+
+HistoricalPriceChart.tsx
+        │
+        │ getHistoricalPrices("SAIL")
+        ▼
+stockService.ts
+        │
+        │ GET /stocks/SAIL/history
+        ▼
+stock.route.ts
+        │
+        ▼
+history controller
+        │
+        ▼
+getHistoricalPricesService()
+        │
+        ▼
+getStockHistoryStatus("SAIL")
+        │
+        ▼
+MySQL
+        │
+        │ latest_date = Sep 11
+        ▼
+historicalPrice.service.ts
+        │
+        │ syncFrom = Sep 12
+        │ today    = Sep 15
+        ▼
+marketDataProvider.getHistoricalPrices(
+    "SAIL.NS",
+    "2026-09-12",
+    "2026-09-15"
+)
+        │
+        ▼
+YahooFinanceProvider.getHistoricalPrices()
+        │
+        │ translates to:
+        │ period1 = Sep 12
+        │ period2 = Sep 16
+        ▼
+yahooFinance.chart()
+        │
+        │ returns Sep 15 candle
+        ▼
+historicalPrice.service.ts
+        │
+        ▼
+insertHistoricalPrices()
+        │
+        ▼
+MySQL
+        │
+        │ latest_date = Sep 15
+        ▼
+repository.getHistoricalPrices()
+        │
+        ▼
+API response
+        │
+        ▼
+HistoricalPriceChart.tsx
+        │
+        ▼
+StockPriceChart.tsx
+        │
+        ▼
+September 15 appears

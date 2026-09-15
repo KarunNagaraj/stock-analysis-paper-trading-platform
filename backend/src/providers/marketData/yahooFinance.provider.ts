@@ -52,35 +52,40 @@ export class YahooFinanceProvider implements MarketDataProvider {
     }
 
     async getHistoricalPrices(
-        providerSymbol: string,
-        from: string,
-        to: string
-    ): Promise<HistoricalPricePoint[]> {
-        const result = await yahooFinance.chart(providerSymbol, {
-            period1: from,
-            period2: to,
-            // Feature 11 needs daily candles rather than intraday data.
-            interval: "1d",
-        });
+    providerSymbol: string,
+    from: string,
+    to: string
+): Promise<HistoricalPricePoint[]> {
 
-        // Discard incomplete candles, then map the remaining Yahoo fields to our model.
-        return result.quotes
-            .filter(
-                (quote) =>
-                    quote.open != null &&
-                    quote.high != null &&
-                    quote.low != null &&
-                    quote.close != null
-            )
-            .map((quote) => ({
-                tradingDate: new Date(quote.date)
-                    .toISOString()
-                    .split("T")[0],
-                openPrice: quote.open!,
-                highPrice: quote.high!,
-                lowPrice: quote.low!,
-                closePrice: quote.close!,
-                volume: quote.volume ?? null,
-            }));
-    }
+    const period2 = new Date(`${to}T00:00:00`);
+    period2.setDate(period2.getDate() + 1);
+
+    const result = await yahooFinance.chart(
+        providerSymbol,
+        {
+            period1: from,
+            period2,
+            interval: "1d",
+        }
+    );
+
+    return result.quotes
+        .filter(
+            (quote) =>
+                quote.open != null &&
+                quote.high != null &&
+                quote.low != null &&
+                quote.close != null
+        )
+        .map((quote) => ({
+            tradingDate: new Date(quote.date)
+                .toISOString()
+                .split("T")[0],
+            openPrice: quote.open!,
+            highPrice: quote.high!,
+            lowPrice: quote.low!,
+            closePrice: quote.close!,
+            volume: quote.volume ?? null,
+        }));
+}
 }

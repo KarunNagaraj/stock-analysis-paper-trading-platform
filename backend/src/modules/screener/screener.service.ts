@@ -10,6 +10,8 @@ import type {
   ScreenerType,
 } from "./screener.validation.js";
 
+import { syncAllStocksHistoricalPrices } from "../stocks/historicalPrice.service.js";
+
 function calculatePercentageChange(
   startPrice: number,
   endPrice: number
@@ -57,6 +59,14 @@ export async function runScreener(
   limit: number
 ) {
   if (period === "daily") {
+    const today = new Date()
+      .toISOString()
+      .slice(0, 10);
+
+    if (date === today) {
+      await syncAllStocksHistoricalPrices(today);
+    }
+
     return await runDailyScreener(type, date, limit);
   }
 
