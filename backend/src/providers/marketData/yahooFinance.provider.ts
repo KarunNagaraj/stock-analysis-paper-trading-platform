@@ -7,6 +7,11 @@ import type {
 
 import type { MarketDataProvider } from "./marketData.provider.js";
 
+import {
+    getCachedQuote,
+    setCachedQuote,
+} from "./quoteCache.js";
+
 // This is the Yahoo Finance client object created from the library's class.
 const yahooFinance = new YahooFinance({
     suppressNotices: ["yahooSurvey"],
@@ -15,6 +20,14 @@ const yahooFinance = new YahooFinance({
 // This class adapts Yahoo Finance to the provider contract used by our application.
 export class YahooFinanceProvider implements MarketDataProvider {
     async getQuote(providerSymbol: string): Promise<MarketQuote> {
+        const cachedQuote =
+            getCachedQuote(providerSymbol);
+
+        if (cachedQuote) {
+            
+            return cachedQuote;
+        }
+
         const quote = await yahooFinance.quote(providerSymbol);
 
         // A quote without a current price cannot be represented as a valid MarketQuote.
@@ -24,8 +37,7 @@ export class YahooFinanceProvider implements MarketDataProvider {
             );
         }
 
-        // Map Yahoo's larger response into the smaller application-owned quote model.
-        return {
+        const marketQuote: MarketQuote = {
             symbol: providerSymbol,
             price: quote.regularMarketPrice,
             dayHigh: quote.regularMarketDayHigh ?? null,
@@ -33,6 +45,10 @@ export class YahooFinanceProvider implements MarketDataProvider {
             previousClose: quote.regularMarketPreviousClose ?? null,
             volume: quote.regularMarketVolume ?? null,
         };
+
+        setCachedQuote(providerSymbol, marketQuote);
+
+        return marketQuote;
     }
 
     async getHistoricalPrices(

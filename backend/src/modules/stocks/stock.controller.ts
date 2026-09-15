@@ -64,8 +64,8 @@ export async function getStockBySymbol(
   } catch (error) {
     console.error("Failed to retrieve stock:", error);
 
-    res.status(404).json({
-      error: "Stock not found",
-    });
+    res.status(500).json({
+            error: "Failed to retrieve stock",
+        });
   }
 }

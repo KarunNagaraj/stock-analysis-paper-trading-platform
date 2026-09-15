@@ -26,6 +26,14 @@ type StockDetailsData = {
   sector: string | null;
   industry: string | null;
 
+  quote: {
+    price: number;
+    dayHigh: number | null;
+    dayLow: number | null;
+    previousClose: number | null;
+    volume: number | null;
+  };
+
   market_cap: string | null;
   pe_ratio: string | null;
   pb_ratio: string | null;
@@ -151,6 +159,16 @@ function StockDetails() {
     return <p>Stock not found</p>;
   }
 
+  const priceChange =
+    stock.quote.previousClose !== null
+      ? stock.quote.price - stock.quote.previousClose
+      : null;
+
+  const priceChangePercent =
+    stock.quote.previousClose !== null
+      ? (priceChange! / stock.quote.previousClose) * 100
+      : null;
+
   return (
     <div className="min-h-screen bg-gray-50 p-8">
 
@@ -182,18 +200,80 @@ function StockDetails() {
           Price
         </h2>
 
-        <div className="mt-4">
-          <p className="text-sm text-gray-500">
-            Current Price
-          </p>
+        <div className="mt-4 grid grid-cols-2 gap-4 sm:grid-cols-4">
+          <div>
+            <p className="text-sm text-gray-500">
+              Current Price
+            </p>
 
-          <p className="mt-1 text-2xl font-bold">
-            —
-          </p>
+            <div className="flex items-baseline gap-3">
+              <p className="mt-1 text-2xl font-semibold">
+                ₹{stock.quote.price.toLocaleString("en-IN", {
+                  minimumFractionDigits: 2,
+                  maximumFractionDigits: 2,
+                })}
+              </p>
 
-          <p className="mt-1 text-sm text-gray-500">
-            Current market price will be available later.
-          </p>
+              {priceChange !== null && priceChangePercent !== null && (
+                <p className="text-sm font-medium">
+                  {priceChange >= 0 ? "+" : ""}
+                  ₹{priceChange.toLocaleString("en-IN", {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2,
+                  })}
+                  {" ("}
+                  {priceChangePercent >= 0 ? "+" : ""}
+                  {priceChangePercent.toFixed(2)}%
+                  {")"}
+                </p>
+              )}
+            </div>
+          </div>
+
+          <div>
+            <p className="text-sm text-gray-500">
+              Day High
+            </p>
+
+            <p className="mt-1 font-medium">
+              {stock.quote.dayHigh !== null
+                ? `₹${stock.quote.dayHigh.toLocaleString("en-IN", {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2,
+                  })}`
+                : "—"}
+            </p>
+          </div>
+
+          <div>
+            <p className="text-sm text-gray-500">
+              Day Low
+            </p>
+
+            <p className="mt-1 font-medium">
+              {stock.quote.dayLow !== null
+                ? `₹${stock.quote.dayLow.toLocaleString("en-IN", {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2,
+                  })}`
+                : "—"}
+            </p>
+          </div>
+
+          <div>
+            <p className="text-sm text-gray-500">
+              Previous Close
+            </p>
+
+            <p className="mt-1 font-medium">
+              {stock.quote.previousClose !== null
+                ? `₹${stock.quote.previousClose.toLocaleString("en-IN", {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2,
+                  })}`
+                : "—"}
+            </p>
+          </div>
         </div>
       </div>
 

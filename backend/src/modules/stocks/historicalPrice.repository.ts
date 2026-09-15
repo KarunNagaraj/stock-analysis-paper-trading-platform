@@ -1,5 +1,88 @@
 import pool from "../../database/db.js";
 
+type StockHistoryStatus = {
+  id: number;
+  symbol: string;
+  provider_symbol: string | null;
+  latest_date: string | Date | null;
+};
+
+export async function getStockHistoryStatus(symbol: string) {
+  const [rows] = await pool.execute(
+    `
+    SELECT
+      s.id,
+      s.symbol,
+      s.provider_symbol,
+      MAX(hp.trading_date) AS latest_date
+    FROM stocks s
+    LEFT JOIN historical_prices hp
+      ON hp.stock_id = s.id
+    WHERE s.symbol = ?
+    GROUP BY
+      s.id,
+      s.symbol,
+      s.provider_symbol
+    `,
+    [symbol]
+  ) as unknown as [StockHistoryStatus[], unknown];
+
+  return rows[0] ?? null;
+}
+
+export async function insertHistoricalPrices(
+  stockId: number,
+  prices: {
+    tradingDate: string;
+    openPrice: number;
+    highPrice: number;
+    lowPrice: number;
+    closePrice: number;
+    volume: number | null;
+  }[]
+) {
+  if (prices.length === 0) {
+    return;
+  }
+
+  const placeholders = prices
+    .map(() => "(?, ?, ?, ?, ?, ?, ?)")
+    .join(", ");
+
+  const values = prices.flatMap(price => [
+    stockId,
+    price.tradingDate,
+    price.openPrice,
+    price.highPrice,
+    price.lowPrice,
+    price.closePrice,
+    price.volume,
+  ]);
+
+  await pool.execute(
+    `
+    INSERT INTO historical_prices
+    (
+      stock_id,
+      trading_date,
+      open_price,
+      high_price,
+      low_price,
+      close_price,
+      volume
+    )
+    VALUES ${placeholders}
+    ON DUPLICATE KEY UPDATE
+      open_price = VALUES(open_price),
+      high_price = VALUES(high_price),
+      low_price = VALUES(low_price),
+      close_price = VALUES(close_price),
+      volume = VALUES(volume)
+    `,
+    values
+  );
+}
+
 export async function getHistoricalPrices(
   symbol: string,
   from?: string,
