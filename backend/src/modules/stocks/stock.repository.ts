@@ -5,6 +5,7 @@ export async function getAllStocks() {
     `SELECT
        id,
        symbol,
+       provider_symbol,
        company_name,
        exchange,
        sector,
@@ -20,6 +21,7 @@ export async function searchStocks(searchTerm: string) {
     `SELECT
        id,
        symbol,
+       provider_symbol,
        company_name,
        exchange,
        sector,
@@ -37,6 +39,7 @@ export async function getStockBySymbol(symbol: string) {
     `SELECT
        s.id,
        s.symbol,
+       s.provider_symbol,
        s.company_name,
        s.exchange,
        s.sector,

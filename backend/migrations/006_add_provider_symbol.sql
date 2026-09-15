@@ -1,0 +1,2 @@
+ALTER TABLE stocks
+ADD COLUMN provider_symbol VARCHAR(50) NULL;
