@@ -171,6 +171,107 @@ export async function syncAllStocksHistoricalPrices(
     failedCount,
   };
 }
+
+export async function syncSelectedStocksHistoricalPrices(
+  symbols: string[],
+  today: string,
+  concurrency = 5
+) {
+  const stocks = await getAllStocksHistoryStatus();
+
+  const symbolSet = new Set(
+    symbols.map((symbol) =>
+      symbol.trim().toUpperCase()
+    )
+  );
+
+  const selectedStocks = stocks.filter((stock) =>
+    symbolSet.has(stock.symbol.toUpperCase())
+  );
+
+  let successCount = 0;
+  let skippedCount = 0;
+  let failedCount = 0;
+
+  for (
+    let i = 0;
+    i < selectedStocks.length;
+    i += concurrency
+  ) {
+    const batch = selectedStocks.slice(
+      i,
+      i + concurrency
+    );
+
+    await Promise.all(
+      batch.map(async (stock) => {
+        try {
+          if (!stock.provider_symbol) {
+            skippedCount++;
+
+            console.log(
+              `[SYNC] Skipped ${stock.symbol}: no provider symbol`
+            );
+
+            return;
+          }
+
+          let syncFrom: string;
+
+          if (stock.latest_date) {
+            syncFrom =
+              typeof stock.latest_date === "string"
+                ? stock.latest_date.slice(0, 10)
+                : stock.latest_date
+                    .toISOString()
+                    .slice(0, 10);
+          } else {
+            syncFrom = "2021-01-01";
+          }
+
+          if (syncFrom > today) {
+            skippedCount++;
+            return;
+          }
+
+          console.log(
+            `[SYNC] ${stock.symbol}: ${syncFrom} -> ${today}`
+          );
+
+          const historicalPrices =
+            await marketDataProvider.getHistoricalPrices(
+              stock.provider_symbol,
+              syncFrom,
+              today
+            );
+
+          if (historicalPrices.length > 0) {
+            await insertHistoricalPrices(
+              stock.id,
+              historicalPrices
+            );
+          }
+
+          successCount++;
+        } catch (error) {
+          failedCount++;
+
+          console.error(
+            `[SYNC] Failed ${stock.symbol}:`,
+            error
+          );
+        }
+      })
+    );
+  }
+
+  return {
+    totalStocks: selectedStocks.length,
+    successCount,
+    skippedCount,
+    failedCount,
+  };
+}
  /* syncAllStocksHistoricalPrices does Get all stocks → process them in groups of 5 → for each stock, fetch its missing/current historical data → update MySQL → keep track of success/failure.
   Get all stocks
 

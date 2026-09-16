@@ -10,7 +10,112 @@ import type {
   ScreenerType,
 } from "./screener.validation.js";
 
-import { syncAllStocksHistoricalPrices } from "../stocks/historicalPrice.service.js";
+import {
+  syncAllStocksHistoricalPrices,
+  syncSelectedStocksHistoricalPrices,
+} from "../stocks/historicalPrice.service.js";
+
+let lastFullSyncDate: string | null = null;
+
+function getTodayDate() {
+  return new Date()
+    .toISOString()
+    .slice(0, 10);
+}
+
+async function getCurrentDailyLeaders(
+  date: string
+) {
+  const currentPrices =
+    await getPricesForDate(date) as any[];
+
+  if (currentPrices.length === 0) {
+    return [];
+  }
+
+  const previousDateRows =
+    await getPreviousTradingDate(date) as any[];
+
+  const previousDate =
+    previousDateRows[0]?.trading_date;
+
+  if (!previousDate) {
+    return [];
+  }
+
+  const previousPrices =
+    await getPricesForDate(previousDate) as any[];
+
+  const previousPriceMap = new Map(
+    previousPrices.map((row: any) => [
+      row.symbol,
+      Number(row.close_price),
+    ])
+  );
+
+  const results = currentPrices
+    .map((row: any) => {
+      const previousPrice =
+        previousPriceMap.get(row.symbol);
+
+      if (!previousPrice) {
+        return null;
+      }
+
+      const currentPrice =
+        Number(row.close_price);
+
+      return {
+        symbol: row.symbol,
+        percentage_change:
+          calculatePercentageChange(
+            previousPrice,
+            currentPrice
+          ),
+      };
+    })
+    .filter(
+      (
+        result
+      ): result is {
+        symbol: string;
+        percentage_change: number;
+      } => result !== null
+    );
+
+  const gainers = [...results]
+    .filter(
+      (result) =>
+        result.percentage_change > 0
+    )
+    .sort(
+      (a, b) =>
+        b.percentage_change -
+        a.percentage_change
+    )
+    .slice(0, 20);
+
+  const losers = [...results]
+    .filter(
+      (result) =>
+        result.percentage_change < 0
+    )
+    .sort(
+      (a, b) =>
+        a.percentage_change -
+        b.percentage_change
+    )
+    .slice(0, 20);
+
+  return [
+    ...gainers.map(
+      (result) => result.symbol
+    ),
+    ...losers.map(
+      (result) => result.symbol
+    ),
+  ];
+}
 
 function calculatePercentageChange(
   startPrice: number,
@@ -59,12 +164,36 @@ export async function runScreener(
   limit: number
 ) {
   if (period === "daily") {
-    const today = new Date()
-      .toISOString()
-      .slice(0, 10);
+    const today = getTodayDate();
 
     if (date === today) {
-      await syncAllStocksHistoricalPrices(today);
+      if (lastFullSyncDate !== today) {
+        console.log(
+          `[SCREENER] Running full market sync for ${today}`
+        );
+
+        await syncAllStocksHistoricalPrices(
+          today
+        );
+
+        lastFullSyncDate = today;
+      } else {
+        const symbols =
+          await getCurrentDailyLeaders(
+            today
+          );
+
+        if (symbols.length > 0) {
+          console.log(
+            `[SCREENER] Refreshing ${symbols.length} leading stocks`
+          );
+
+          await syncSelectedStocksHistoricalPrices(
+            symbols,
+            today
+          );
+        }
+      }
     }
 
     return await runDailyScreener(type, date, limit);
