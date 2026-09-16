@@ -1,4 +1,5 @@
 import pool from "../../database/db.js";
+import { RowDataPacket } from "mysql2";
 
 type StockHistoryStatus = {
   id: number;
@@ -6,6 +7,27 @@ type StockHistoryStatus = {
   provider_symbol: string | null;
   latest_date: string | Date | null;
 };
+
+interface LatestPriceRow extends RowDataPacket {
+  close_price: number;
+}
+
+export async function getLatestPrice(
+  stockId: number
+): Promise<number | null> {
+  const [rows] = await pool.execute<LatestPriceRow[]>(
+    `
+    SELECT close_price
+    FROM historical_prices
+    WHERE stock_id = ?
+    ORDER BY trading_date DESC
+    LIMIT 1
+    `,
+    [stockId]
+  );
+
+  return rows.length > 0 ? rows[0].close_price : null;
+}
 
 export async function getStockHistoryStatus(symbol: string) {
   const [rows] = await pool.execute(

@@ -5,6 +5,7 @@ import stockRouter from "./modules/stocks/stock.route.js";
 import screenerRoutes from "./modules/screener/screener.route.js";
 import authRouter from "./modules/auth/auth.route";
 import paperAccountRouter from "./modules/paperTrading/paperAccount.route";
+import paperOrderRouter from "./modules/paperTrading/paperOrder.route";
 import {
   startScreenerMarketSyncJob,
 } from "./jobs/screenerMarketSync.job.js";
@@ -20,6 +21,7 @@ app.use("/api/stocks", stockRouter);
 app.use("/api/screener", screenerRoutes);
 app.use("/api/auth", authRouter);
 app.use("/api/paper", paperAccountRouter);
+app.use("/api/paper", paperOrderRouter);
 app.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`);
 
