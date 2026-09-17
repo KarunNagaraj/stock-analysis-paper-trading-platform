@@ -69,3 +69,21 @@ export async function getStockBySymbol(symbol: string) {
 
   return rows;
 }
+
+export async function getStockById(stockId: number) {
+  const [rows] = await pool.execute(
+    `SELECT
+       id,
+       symbol,
+       provider_symbol,
+       company_name,
+       exchange,
+       sector,
+       industry
+     FROM stocks
+     WHERE id = ?`,
+    [stockId]
+  );
+
+  return rows;
+}

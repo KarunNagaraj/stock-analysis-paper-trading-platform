@@ -1,6 +1,11 @@
 import { Router } from "express";
 import { authenticateToken } from "../auth/auth.middleware";
-import { createPaperOrder } from "./paperOrder.controller";
+import {
+        createPaperOrder,
+        getPaperOrders,
+        getPaperTrades,
+        getPaperPositions,
+} from "./paperOrder.controller";
 
 const paperOrderRouter = Router();
 
@@ -8,6 +13,24 @@ paperOrderRouter.post(
     "/orders",
     authenticateToken,
     createPaperOrder
+);
+
+paperOrderRouter.get(
+        "/orders",
+        authenticateToken,
+        getPaperOrders
+);
+
+paperOrderRouter.get(
+        "/trades",
+        authenticateToken,
+        getPaperTrades
+);
+
+paperOrderRouter.get(
+        "/positions",
+        authenticateToken,
+        getPaperPositions
 );
 
 export default paperOrderRouter;
@@ -42,3 +65,17 @@ paperOrder.service.ts
         ▼
 JSON response
 */
+/*                    /api/paper
+                         │
+        ┌────────────────┼─────────────────┐
+        │                │                 │
+     account           orders            trades
+        │                │                 │
+   GET account       GET orders       GET trades
+   POST account      POST orders
+   POST reset
+                         │
+                         │
+                     positions
+                         │
+                    GET positions*/

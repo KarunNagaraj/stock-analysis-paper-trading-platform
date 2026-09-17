@@ -1,5 +1,8 @@
 import type { Request, Response } from "express";
 import { placePaperOrder } from "./paperOrder.service.js";
+import { getOrdersByAccount } from "./paperOrder.repository.js";
+import { getTradesByAccount } from "./paperTrade.repository.js";
+import { getPositionsByAccount } from "./paperPosition.repository.js";
 import type { CreatePaperOrderInput } from "./paperOrder.types.js";
 
 export async function createPaperOrder(
@@ -52,6 +55,69 @@ export async function createPaperOrder(
 
         res.status(isClientError ? 400 : 500).json({
             error: message,
+        });
+    }
+}
+
+export async function getPaperOrders(req: Request, res: Response) {
+    try {
+        if (!req.user) {
+            res.status(401).json({
+                error: "Authentication required",
+            });
+            return;
+        }
+
+        const orders = await getOrdersByAccount(req.user.id);
+
+        res.status(200).json(orders);
+    } catch (error) {
+        console.error("Failed to retrieve paper orders:", error);
+
+        res.status(500).json({
+            error: "Failed to retrieve paper orders",
+        });
+    }
+}
+
+export async function getPaperTrades(req: Request, res: Response) {
+    try {
+        if (!req.user) {
+            res.status(401).json({
+                error: "Authentication required",
+            });
+            return;
+        }
+
+        const trades = await getTradesByAccount(req.user.id);
+
+        res.status(200).json(trades);
+    } catch (error) {
+        console.error("Failed to retrieve paper trades:", error);
+
+        res.status(500).json({
+            error: "Failed to retrieve paper trades",
+        });
+    }
+}
+
+export async function getPaperPositions(req: Request, res: Response) {
+    try {
+        if (!req.user) {
+            res.status(401).json({
+                error: "Authentication required",
+            });
+            return;
+        }
+
+        const positions = await getPositionsByAccount(req.user.id);
+
+        res.status(200).json(positions);
+    } catch (error) {
+        console.error("Failed to retrieve paper positions:", error);
+
+        res.status(500).json({
+            error: "Failed to retrieve paper positions",
         });
     }
 }

@@ -445,3 +445,38 @@ StockPriceChart.tsx
         │
         ▼
 September 15 appears
+
+paper_accounts
+        │
+        │ cash + initial capital
+        ▼
+   ACCOUNT DATA
+
+
+paper_positions
+        │
+        │ what is currently owned
+        ▼
+  OPEN POSITIONS
+
+
+paper_trades
+        │
+        │ what was actually executed
+        │ + realized P&L
+        ▼
+ TRADE HISTORY
+
+
+stocks
+        │
+        │ stock_id → symbol/provider_symbol
+        ▼
+ STOCK INFORMATION
+
+
+Yahoo Finance
+        │
+        │ current price
+        ▼
+ LIVE MARKET DATA
