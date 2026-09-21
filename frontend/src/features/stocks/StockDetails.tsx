@@ -4,7 +4,7 @@ import {
   getStockBySymbol,
 } from "../../services/stockService";
 import type { PaperOrderSide } from "../../services/paperTradingService";
-import PaperOrderModal from "../paperTrading/PaperOrderModal";
+import PaperOrderModal from "../paperTrading/components/PaperOrderModal";
 import HistoricalPriceChart from "./HistoricalPriceChart";
 
 /* purpose of this file:

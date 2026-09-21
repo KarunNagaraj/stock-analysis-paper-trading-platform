@@ -3,7 +3,7 @@ import {
   searchStocks,
   getStockBySymbol,
 } from "../../services/stockService";
-import PaperOrderModal from "../paperTrading/PaperOrderModal";
+import PaperOrderModal from "../paperTrading/components/PaperOrderModal";
 import { Link } from "react-router-dom";
 
 
