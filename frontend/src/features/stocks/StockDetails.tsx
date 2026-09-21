@@ -3,6 +3,8 @@ import { Link, useParams } from "react-router-dom";
 import {
   getStockBySymbol,
 } from "../../services/stockService";
+import type { PaperOrderSide } from "../../services/paperTradingService";
+import PaperOrderModal from "../paperTrading/PaperOrderModal";
 import HistoricalPriceChart from "./HistoricalPriceChart";
 
 /* purpose of this file:
@@ -125,6 +127,8 @@ function StockDetails() {
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [orderSide, setOrderSide] = useState<PaperOrderSide | null>(null);
+  const [orderMessage, setOrderMessage] = useState("");
   useEffect(() => {
     async function loadStockDetails() {
       try {
@@ -174,24 +178,52 @@ function StockDetails() {
 
       {/* Stock Header */}
       <div className="rounded-xl bg-white p-6 shadow-sm">
-        <p className="text-sm font-medium text-gray-500">
-          {stock.exchange}
-        </p>
+        <div className="flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <p className="text-sm font-medium text-gray-500">
+              {stock.exchange}
+            </p>
 
-        <h1 className="mt-1 text-3xl font-bold">
-          {stock.symbol}
-        </h1>
+            <h1 className="mt-1 text-3xl font-bold">
+              {stock.symbol}
+            </h1>
 
-        <p className="mt-1 text-lg text-gray-600">
-          {stock.company_name}
-        </p>
+            <p className="mt-1 text-lg text-gray-600">
+              {stock.company_name}
+            </p>
 
-        <div className="mt-3 flex gap-2 text-sm text-gray-500">
-          <span>{stock.sector}</span>
-          <span>•</span>
-          <span>{stock.industry}</span>
+            <div className="mt-3 flex gap-2 text-sm text-gray-500">
+              <span>{stock.sector}</span>
+              <span>•</span>
+              <span>{stock.industry}</span>
+            </div>
+          </div>
+
+          <div className="flex gap-3">
+            <button
+              type="button"
+              onClick={() => setOrderSide("BUY")}
+              className="rounded-lg bg-blue-600 px-6 py-3 font-semibold text-white transition hover:bg-blue-700"
+            >
+              Buy
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setOrderSide("SELL")}
+              className="rounded-lg bg-red-600 px-6 py-3 font-semibold text-white transition hover:bg-red-700"
+            >
+              Sell
+            </button>
+          </div>
         </div>
       </div>
+
+      {orderMessage && (
+        <div className="mt-4 rounded-lg bg-green-50 p-4 text-sm text-green-700">
+          {orderMessage}
+        </div>
+      )}
 
 
       {/* Basic Price Information */}
@@ -393,6 +425,21 @@ function StockDetails() {
           </p>
         )}
       </div>
+
+      {orderSide && (
+        <PaperOrderModal
+          symbol={stock.symbol}
+          side={orderSide}
+          currentPrice={stock.quote.price}
+          onClose={() => setOrderSide(null)}
+          onSuccess={() => {
+            setOrderSide(null);
+            setOrderMessage(
+              `${orderSide === "BUY" ? "Buy" : "Sell"} order executed successfully`
+            );
+          }}
+        />
+      )}
 
     </div>
   );

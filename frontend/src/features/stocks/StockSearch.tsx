@@ -1,7 +1,9 @@
 import { useState } from "react";
 import {
-  searchStocks
+  searchStocks,
+  getStockBySymbol,
 } from "../../services/stockService";
+import PaperOrderModal from "../paperTrading/PaperOrderModal";
 import { Link } from "react-router-dom";
 
 
@@ -27,6 +29,10 @@ function StockSearch() {
   const [stocks, setStocks] = useState<Stock[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [orderStock, setOrderStock] = useState<Stock | null>(null);
+  const [orderSide, setOrderSide] = useState<"BUY" | "SELL" | null>(null);
+  const [orderPrice, setOrderPrice] = useState<number | null>(null);
+  const [orderLoading, setOrderLoading] = useState(false);
   
 
   const handleSearch = async () => {
@@ -47,6 +53,27 @@ function StockSearch() {
       setError("Failed to search stocks.");
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleOpenOrder = async (
+    stock: Stock,
+    side: "BUY" | "SELL"
+  ) => {
+    try {
+      setOrderLoading(true);
+      setError("");
+
+      const stockDetails = await getStockBySymbol(stock.symbol);
+
+      setOrderStock(stock);
+      setOrderSide(side);
+      setOrderPrice(stockDetails.quote.price);
+    } catch (error) {
+      console.error("Failed to load stock price:", error);
+      setError("Unable to load the current stock price.");
+    } finally {
+      setOrderLoading(false);
     }
   };
 
@@ -94,10 +121,13 @@ function StockSearch() {
 
       <div className="mt-4 space-y-2">
         {stocks.map((stock) => (
-            <Link
+          <div
               key={stock.id}
+              className="flex items-center justify-between rounded-lg border bg-white p-4 hover:bg-gray-50"
+          >
+            <Link
               to={`/stocks/${stock.symbol}`}
-              className="block rounded-lg border bg-white p-4 hover:bg-gray-50"
+              className="min-w-0 flex-1"
             >
               <p className="font-semibold">
                 {stock.symbol}
@@ -111,10 +141,47 @@ function StockSearch() {
                 {stock.exchange} · {stock.sector}
               </p>
             </Link>
-          ))}
+
+            <div className="ml-4 flex shrink-0 gap-2">
+              <button
+                type="button"
+                disabled={orderLoading}
+                onClick={() => handleOpenOrder(stock, "BUY")}
+                className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                Buy
+              </button>
+
+              <button
+                type="button"
+                disabled={orderLoading}
+                onClick={() => handleOpenOrder(stock, "SELL")}
+                className="rounded-lg bg-red-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                Sell
+              </button>
+            </div>
+          </div>
+        ))}
       </div>
 
-     
+      {orderStock && orderSide && orderPrice !== null && (
+        <PaperOrderModal
+          symbol={orderStock.symbol}
+          currentPrice={orderPrice}
+          side={orderSide}
+          onClose={() => {
+            setOrderStock(null);
+            setOrderSide(null);
+            setOrderPrice(null);
+          }}
+          onSuccess={() => {
+            setOrderStock(null);
+            setOrderSide(null);
+            setOrderPrice(null);
+          }}
+        />
+      )}
     </div>
   );
 }

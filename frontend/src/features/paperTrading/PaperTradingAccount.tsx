@@ -2,9 +2,15 @@ import { useEffect, useState } from "react";
 import {
     createPaperAccount,
     getPaperAccount,
+    getPaperPortfolio,
     resetPaperAccount,
 } from "../../services/paperTradingService";
 import type { PaperAccount } from "../../types/paperTrading";
+import type { PaperPortfolio } from "../../types/paperPortfolio.types";
+
+function formatPnl(value: number) {
+    return `${value >= 0 ? "+" : ""}₹${value.toFixed(2)}`;
+}
 
 export default function PaperTradingAccount() {
     const [account, setAccount] = useState<PaperAccount | null>(null);
@@ -14,6 +20,9 @@ export default function PaperTradingAccount() {
     const [isCreating, setIsCreating] = useState(false);
     const [isResetting, setIsResetting] = useState(false);
     const [error, setError] = useState("");
+    const [portfolio, setPortfolio] = useState<PaperPortfolio | null>(null);
+    const [portfolioLoading, setPortfolioLoading] = useState(false);
+    const [portfolioError, setPortfolioError] = useState<string | null>(null);
 
     useEffect(() => {
         async function loadAccount() {
@@ -31,6 +40,33 @@ export default function PaperTradingAccount() {
 
         loadAccount();
     }, []);
+
+    useEffect(() => {
+        if (!account) {
+            setPortfolio(null);
+            return;
+        }
+
+        async function loadPortfolio() {
+            try {
+                setPortfolioLoading(true);
+                setPortfolioError(null);
+
+                const data = await getPaperPortfolio();
+                setPortfolio(data);
+            } catch (error) {
+                setPortfolioError(
+                    error instanceof Error
+                        ? error.message
+                        : "Failed to load portfolio"
+                );
+            } finally {
+                setPortfolioLoading(false);
+            }
+        }
+
+        loadPortfolio();
+    }, [account]);
 
     async function handleCreateAccount() {
         setError("");
@@ -204,6 +240,141 @@ export default function PaperTradingAccount() {
                     </p>
                 </div>
             </div>
+
+            {portfolioLoading && (
+                <div className="mt-6 rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
+                    <p className="text-gray-500">Loading portfolio...</p>
+                </div>
+            )}
+
+            {portfolioError && (
+                <div className="mt-6 rounded-xl border border-red-200 bg-red-50 p-6">
+                    <p className="text-sm text-red-600">{portfolioError}</p>
+                </div>
+            )}
+
+            {!portfolioLoading && !portfolioError && !portfolio && (
+                <div className="mt-6 rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
+                    <p className="text-gray-500">Portfolio unavailable.</p>
+                </div>
+            )}
+
+            {portfolio && (
+                <section className="mt-6">
+                    <h2 className="mb-4 text-xl font-semibold text-gray-900">
+                        Paper Portfolio
+                    </h2>
+
+                    <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+                        <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
+                            <p className="text-sm text-gray-500">Portfolio Value</p>
+                            <p className="mt-2 text-2xl font-semibold text-gray-900">
+                                ₹{portfolio.portfolioValue.toFixed(2)}
+                            </p>
+                        </div>
+
+                        <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
+                            <p className="text-sm text-gray-500">Cash Balance</p>
+                            <p className="mt-2 text-2xl font-semibold text-gray-900">
+                                ₹{portfolio.cashBalance.toFixed(2)}
+                            </p>
+                        </div>
+
+                        <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
+                            <p className="text-sm text-gray-500">Invested Value</p>
+                            <p className="mt-2 text-2xl font-semibold text-gray-900">
+                                ₹{portfolio.investedValue.toFixed(2)}
+                            </p>
+                        </div>
+
+                        <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
+                            <p className="text-sm text-gray-500">Return</p>
+                            <p className="mt-2 text-2xl font-semibold text-gray-900">
+                                {portfolio.returnPercentage.toFixed(6)}%
+                            </p>
+                        </div>
+                    </div>
+
+                    <div className="mt-4 grid gap-4 sm:grid-cols-3">
+                        <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
+                            <p className="text-sm text-gray-500">Realized P&amp;L</p>
+                            <p className="mt-2 text-xl font-semibold text-gray-900">
+                                {formatPnl(portfolio.realizedPnl)}
+                            </p>
+                        </div>
+
+                        <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
+                            <p className="text-sm text-gray-500">Unrealized P&amp;L</p>
+                            <p className="mt-2 text-xl font-semibold text-gray-900">
+                                {formatPnl(portfolio.unrealizedPnl)}
+                            </p>
+                        </div>
+
+                        <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
+                            <p className="text-sm text-gray-500">Total P&amp;L</p>
+                            <p className="mt-2 text-xl font-semibold text-gray-900">
+                                {formatPnl(portfolio.totalPnl)}
+                            </p>
+                        </div>
+                    </div>
+
+                    <div className="mt-6 rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
+                        <h2 className="text-lg font-semibold text-gray-900">
+                            Holdings
+                        </h2>
+
+                        {portfolio.positions.length === 0 ? (
+                            <p className="mt-4 text-sm text-gray-500">
+                                No holdings yet.
+                            </p>
+                        ) : (
+                            <div className="mt-4 overflow-x-auto">
+                                <table className="min-w-full text-left text-sm">
+                                    <thead className="border-b border-gray-200 text-gray-500">
+                                        <tr>
+                                            <th className="px-4 py-3 font-medium">Stock</th>
+                                            <th className="px-4 py-3 font-medium">Quantity</th>
+                                            <th className="px-4 py-3 font-medium">Avg. Price</th>
+                                            <th className="px-4 py-3 font-medium">Current Price</th>
+                                            <th className="px-4 py-3 font-medium">Invested</th>
+                                            <th className="px-4 py-3 font-medium">Market Value</th>
+                                            <th className="px-4 py-3 font-medium">P&amp;L</th>
+                                        </tr>
+                                    </thead>
+
+                                    <tbody className="divide-y divide-gray-100">
+                                        {portfolio.positions.map((position) => (
+                                            <tr key={position.stockId}>
+                                                <td className="whitespace-nowrap px-4 py-3 font-medium text-gray-900">
+                                                    {position.symbol}
+                                                </td>
+                                                <td className="whitespace-nowrap px-4 py-3 text-gray-700">
+                                                    {position.quantity}
+                                                </td>
+                                                <td className="whitespace-nowrap px-4 py-3 text-gray-700">
+                                                    ₹{position.averagePrice.toFixed(2)}
+                                                </td>
+                                                <td className="whitespace-nowrap px-4 py-3 text-gray-700">
+                                                    ₹{position.currentPrice.toFixed(2)}
+                                                </td>
+                                                <td className="whitespace-nowrap px-4 py-3 text-gray-700">
+                                                    ₹{position.investedValue.toFixed(2)}
+                                                </td>
+                                                <td className="whitespace-nowrap px-4 py-3 text-gray-700">
+                                                    ₹{position.marketValue.toFixed(2)}
+                                                </td>
+                                                <td className="whitespace-nowrap px-4 py-3 font-medium text-gray-900">
+                                                    {formatPnl(position.unrealizedPnl)}
+                                                </td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            </div>
+                        )}
+                    </div>
+                </section>
+            )}
 
             <div className="mt-6 rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
                 <h2 className="text-lg font-semibold text-gray-900">
