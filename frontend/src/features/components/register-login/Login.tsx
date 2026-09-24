@@ -1,4 +1,5 @@
-import { FormEvent, useState } from "react";
+import { useState } from "react";
+import type { FormEvent } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../../auth/AuthContext";
 
@@ -33,14 +34,18 @@ function Login() {
     }
 
     return (
-        <div className="flex min-h-[calc(100vh-73px)] items-center justify-center bg-gray-50 px-6 py-12">
-            <div className="w-full max-w-md rounded-xl border border-gray-200 bg-white p-8 shadow-sm">
+        <div className="flex min-h-[calc(100vh-73px)] items-center justify-center bg-[radial-gradient(circle_at_top,_rgba(96,165,250,0.15),transparent_30%),linear-gradient(180deg,#edf5ff_0%,#f8fafc_100%)] px-6 py-12">
+            <div className="w-full max-w-md rounded-2xl border border-slate-200 bg-white/90 p-8 shadow-[0_18px_45px_rgba(15,23,42,0.08)] backdrop-blur-sm">
                 <div className="mb-8">
-                    <h1 className="text-2xl font-bold text-gray-900">
+                    <div className="mb-3 inline-flex rounded-full bg-blue-100 px-2.5 py-1 text-xs font-semibold uppercase tracking-wider text-blue-700">
+                        MarketLens
+                    </div>
+
+                    <h1 className="text-2xl font-bold text-slate-900">
                         Welcome back
                     </h1>
 
-                    <p className="mt-2 text-sm text-gray-500">
+                    <p className="mt-2 text-sm text-slate-500">
                         Sign in to your stock market account.
                     </p>
                 </div>

@@ -50,55 +50,6 @@ type StockDetailsData = {
 
   fundamentals_updated_at: string | null;
 };
-function hasFundamentals(stock: StockDetailsData) {
-  return [
-    stock.pe_ratio,
-    stock.pb_ratio,
-    stock.eps,
-    stock.roe,
-    stock.roce,
-    stock.profit_margin,
-    stock.revenue_growth,
-    stock.profit_growth,
-    stock.debt_to_equity,
-    stock.dividend_yield,
-  ].some((value) => value !== null);
-}
-
-function formatMetric(
-  value: string | null,
-  suffix = ""
-) {
-  if (value === null) {
-    return "N/A";
-  }
-
-  return `${value}${suffix}`;
-}
-
-type MetricProps = {
-  label: string;
-  value: string | null;
-  suffix?: string;
-};
-
-function Metric({
-  label,
-  value,
-  suffix = "",
-}: MetricProps) {
-  return (
-    <div className="rounded-lg bg-white p-4 shadow-sm">
-      <p className="text-sm text-gray-500">
-        {label}
-      </p>
-
-      <p className="mt-1 text-lg font-semibold">
-        {formatMetric(value, suffix)}
-      </p>
-    </div>
-  );
-}
 
 type InfoItemProps = {
   label: string;
@@ -174,13 +125,13 @@ function StockDetails() {
       : null;
 
   return (
-    <div className="min-h-screen bg-gray-50 p-8">
+    <div className="min-h-screen bg-[radial-gradient(circle_at_top_left,_rgba(59,130,246,0.12),transparent_24%),linear-gradient(180deg,#edf5ff_0%,#f8fafc_100%)] p-8">
 
       {/* Stock Header */}
-      <div className="rounded-xl bg-white p-6 shadow-sm">
+      <div className="rounded-2xl border border-sky-100 bg-white/90 p-6 shadow-[0_18px_45px_rgba(15,23,42,0.06)]">
         <div className="flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <p className="text-sm font-medium text-gray-500">
+            <p className="text-sm font-medium text-blue-700">
               {stock.exchange}
             </p>
 
@@ -192,7 +143,7 @@ function StockDetails() {
               {stock.company_name}
             </p>
 
-            <div className="mt-3 flex gap-2 text-sm text-gray-500">
+            <div className="mt-3 flex gap-2 text-sm text-slate-500">
               <span>{stock.sector}</span>
               <span>•</span>
               <span>{stock.industry}</span>
@@ -203,7 +154,7 @@ function StockDetails() {
             <button
               type="button"
               onClick={() => setOrderSide("BUY")}
-              className="rounded-lg bg-blue-600 px-6 py-3 font-semibold text-white transition hover:bg-blue-700"
+              className="rounded-lg bg-gradient-to-r from-blue-600 to-blue-700 px-6 py-3 font-semibold text-white shadow-md shadow-blue-600/25 transition hover:brightness-110"
             >
               Buy
             </button>
@@ -211,7 +162,7 @@ function StockDetails() {
             <button
               type="button"
               onClick={() => setOrderSide("SELL")}
-              className="rounded-lg bg-red-600 px-6 py-3 font-semibold text-white transition hover:bg-red-700"
+              className="rounded-lg bg-gradient-to-r from-red-500 to-red-600 px-6 py-3 font-semibold text-white shadow-md shadow-red-500/20 transition hover:brightness-110"
             >
               Sell
             </button>
@@ -227,7 +178,7 @@ function StockDetails() {
 
 
       {/* Basic Price Information */}
-      <div className="mt-6 rounded-xl bg-white p-6 shadow-sm">
+      <div className="mt-6 rounded-2xl border border-sky-100 bg-white/90 p-6 shadow-[0_18px_45px_rgba(15,23,42,0.06)]">
         <h2 className="text-xl font-semibold">
           Price
         </h2>
@@ -310,7 +261,7 @@ function StockDetails() {
       </div>
 
       {/* Company Information */}
-      <div className="mt-6 rounded-xl bg-white p-6 shadow-sm">
+      <div className="mt-6 rounded-2xl border border-sky-100 bg-white/90 p-6 shadow-[0_18px_45px_rgba(15,23,42,0.06)]">
         <h2 className="text-xl font-semibold">
           Company Information
         </h2>
@@ -341,89 +292,19 @@ function StockDetails() {
       </div>
 
       {/* Historical Prices */}
-      <div className="mt-6 rounded-xl bg-white p-6 shadow-sm">
-        
+      <div className="mt-6 rounded-2xl border border-sky-100 bg-white/90 p-6 shadow-[0_18px_45px_rgba(15,23,42,0.06)]">
         <h2 className="text-xl font-semibold">
           Historical Prices
         </h2>
 
         <HistoricalPriceChart symbol={stock.symbol} />
-        <Link to={`/stocks/${stock.symbol}/chart`} className="mt-4 inline-block rounded-lg bg-black px-4 py-2 text-sm font-medium text-white">
+
+        <Link
+          to={`/stocks/${stock.symbol}/chart`}
+          className="mt-4 inline-block rounded-lg bg-gradient-to-r from-blue-600 to-blue-700 px-4 py-2 text-sm font-medium text-white shadow-md shadow-blue-600/25 transition hover:brightness-110"
+        >
           Open Full Chart
         </Link>
-      </div>
-
-      {/* Fundamentals */}
-      <div className="mt-6 rounded-xl bg-white p-6 shadow-sm">
-        <h2 className="text-xl font-semibold">
-          Fundamentals
-        </h2>
-
-        {hasFundamentals(stock) ? (
-          <div className="mt-4 grid grid-cols-2 gap-4 md:grid-cols-4">
-
-            <Metric
-              label="P/E Ratio"
-              value={stock.pe_ratio}
-            />
-
-            <Metric
-              label="P/B Ratio"
-              value={stock.pb_ratio}
-            />
-
-            <Metric
-              label="EPS"
-              value={stock.eps}
-            />
-
-            <Metric
-              label="ROE"
-              value={stock.roe}
-              suffix="%"
-            />
-
-            <Metric
-              label="ROCE"
-              value={stock.roce}
-              suffix="%"
-            />
-
-            <Metric
-              label="Profit Margin"
-              value={stock.profit_margin}
-              suffix="%"
-            />
-
-            <Metric
-              label="Revenue Growth"
-              value={stock.revenue_growth}
-              suffix="%"
-            />
-
-            <Metric
-              label="Profit Growth"
-              value={stock.profit_growth}
-              suffix="%"
-            />
-
-            <Metric
-              label="Debt / Equity"
-              value={stock.debt_to_equity}
-            />
-
-            <Metric
-              label="Dividend Yield"
-              value={stock.dividend_yield}
-              suffix="%"
-            />
-
-          </div>
-        ) : (
-          <p className="mt-4 text-gray-500">
-            Fundamental data unavailable.
-          </p>
-        )}
       </div>
 
       {orderSide && (

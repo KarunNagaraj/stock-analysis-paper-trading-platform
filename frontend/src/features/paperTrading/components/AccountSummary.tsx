@@ -1,21 +1,34 @@
 import type { PaperAccount } from "../../../types/paperTrading";
 import { formatCurrency } from "../utils/paperTradingFormatters";
 
-export default function AccountSummary({ account }: { account: PaperAccount }) {
+export default function AccountSummary({
+    account,
+}: {
+    account: PaperAccount;
+}) {
     const summaryCards = [
-        ["Available Cash", account.cash_balance],
-        ["Initial Balance", account.initial_balance],
+        {
+            label: "Available Cash",
+            value: account.cash_balance,
+        },
+        {
+            label: "Initial Balance",
+            value: account.initial_balance,
+        },
     ];
 
     return (
         <div className="grid gap-4 sm:grid-cols-2">
-            {summaryCards.map(([label, value]) => (
+            {summaryCards.map(({ label, value }) => (
                 <div
                     key={label}
-                    className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm"
+                    className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm"
                 >
-                    <p className="text-sm text-gray-500">{label}</p>
-                    <p className="mt-2 text-3xl font-semibold text-gray-900">
+                    <p className="text-sm font-medium text-slate-500">
+                        {label}
+                    </p>
+
+                    <p className="mt-2 text-3xl font-bold tracking-tight text-slate-900">
                         {formatCurrency(value)}
                     </p>
                 </div>

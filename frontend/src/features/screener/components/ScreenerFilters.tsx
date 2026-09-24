@@ -32,15 +32,18 @@ export default function ScreenerFilters({
     onLimitChange,
 }: ScreenerFiltersProps) {
     return (
-        <div className="mb-6 flex flex-wrap gap-4">
+        <div className="grid gap-4 md:grid-cols-4">
             <div>
-                <label className="mb-1 block">Period</label>
+                <label className="mb-2 block text-xs font-semibold uppercase tracking-wider text-slate-500">
+                    Period
+                </label>
+
                 <select
                     value={period}
                     onChange={(event) =>
                         onPeriodChange(event.target.value as ScreenerPeriod)
                     }
-                    className="rounded border p-2"
+                    className="w-full rounded-xl border border-slate-300 bg-slate-50 px-3.5 py-3 text-sm font-medium text-slate-900 outline-none transition focus:border-blue-500 focus:bg-white focus:ring-4 focus:ring-blue-100"
                 >
                     <option value="daily">Daily</option>
                     <option value="weekly">Weekly</option>
@@ -49,13 +52,16 @@ export default function ScreenerFilters({
             </div>
 
             <div>
-                <label className="mb-1 block">Type</label>
+                <label className="mb-2 block text-xs font-semibold uppercase tracking-wider text-slate-500">
+                    Direction
+                </label>
+
                 <select
                     value={type}
                     onChange={(event) =>
                         onTypeChange(event.target.value as ScreenerType)
                     }
-                    className="rounded border p-2"
+                    className="w-full rounded-xl border border-slate-300 bg-slate-50 px-3.5 py-3 text-sm font-medium text-slate-900 outline-none transition focus:border-blue-500 focus:bg-white focus:ring-4 focus:ring-blue-100"
                 >
                     <option value="gainers">Gainers</option>
                     <option value="losers">Losers</option>
@@ -63,7 +69,10 @@ export default function ScreenerFilters({
             </div>
 
             <div>
-                <label className="mb-1 block">Date</label>
+                <label className="mb-2 block text-xs font-semibold uppercase tracking-wider text-slate-500">
+                    Trading Date
+                </label>
+
                 <input
                     type="date"
                     value={date}
@@ -71,22 +80,25 @@ export default function ScreenerFilters({
                     max={maxDate}
                     disabled={dateLoading}
                     onChange={(event) => onDateChange(event.target.value)}
-                    className="rounded border p-2"
+                    className="w-full rounded-xl border border-slate-300 bg-slate-50 px-3.5 py-3 text-sm font-medium text-slate-900 outline-none transition focus:border-blue-500 focus:bg-white focus:ring-4 focus:ring-blue-100 disabled:cursor-not-allowed disabled:opacity-60"
                 />
             </div>
 
             <div>
-                <label className="mb-1 block">Results</label>
+                <label className="mb-2 block text-xs font-semibold uppercase tracking-wider text-slate-500">
+                    Results
+                </label>
+
                 <select
                     value={limit}
                     onChange={(event) =>
                         onLimitChange(Number(event.target.value) as ScreenerLimit)
                     }
-                    className="rounded border p-2"
+                    className="w-full rounded-xl border border-slate-300 bg-slate-50 px-3.5 py-3 text-sm font-medium text-slate-900 outline-none transition focus:border-blue-500 focus:bg-white focus:ring-4 focus:ring-blue-100"
                 >
-                    <option value={5}>5</option>
-                    <option value={10}>10</option>
-                    <option value={20}>20</option>
+                    <option value={5}>5 results</option>
+                    <option value={10}>10 results</option>
+                    <option value={20}>20 results</option>
                 </select>
             </div>
         </div>
