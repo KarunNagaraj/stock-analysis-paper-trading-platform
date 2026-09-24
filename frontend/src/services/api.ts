@@ -2,7 +2,7 @@ import axios from "axios";
 import { getToken } from "./authStorage";
 
 const apiBaseUrl =
-  (import.meta.env.VITE_API_BASE_URL ?? "http://localhost:5000/api").replace(/\/+$/, "");
+  (import.meta.env.VITE_API_BASE_URL ?? "/api").replace(/\/+$/, "");
 
 const api = axios.create({
     baseURL: apiBaseUrl,
