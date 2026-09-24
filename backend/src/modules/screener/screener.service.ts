@@ -212,7 +212,7 @@ async function runDailyScreener(
   date: string,
   limit: number
 ) {
-  const currentPrices = await getPricesForDate(date);
+  const currentPrices = (await getPricesForDate(date)) as any[];
 
   if (currentPrices.length === 0) {
     throw new Error(
@@ -221,7 +221,7 @@ async function runDailyScreener(
   }
 
   const previousDateRows =
-    await getPreviousTradingDate(date);
+    (await getPreviousTradingDate(date)) as any[];
 
   const previousDate =
     previousDateRows[0]?.trading_date;
@@ -233,7 +233,7 @@ async function runDailyScreener(
   }
 
   const previousPrices =
-    await getPricesForDate(previousDate);
+    (await getPricesForDate(previousDate)) as any[];
 
   const previousPriceMap = new Map(
     previousPrices.map((row: any) => [
@@ -267,7 +267,7 @@ async function runDailyScreener(
         trading_date: date,
       };
     })
-    .filter((result) => {
+    .filter((result): result is { symbol: string; company_name: string; start_price: number; end_price: number; percentage_change: number; trading_date: string } => {
       if (result === null) {
         return false;
       }
@@ -279,7 +279,7 @@ async function runDailyScreener(
       return result.percentage_change < 0;
     });
 
-  results.sort((a, b) => {  //sort the results array based on percentage change. If type is gainers, sort in descending order largest to smallest, else if losers sort in ascending order, -5% to +5% for example.
+  results.sort((a: any, b: any) => {  //sort the results array based on percentage change. If type is gainers, sort in descending order largest to smallest, else if losers sort in ascending order, -5% to +5% for example.
     if (type === "gainers") {
       return (
         b.percentage_change -
@@ -305,7 +305,7 @@ async function runPeriodScreener(
   // Make sure the selected date itself
   // is a trading date with market data.
   const selectedDatePrices =
-    await getPricesForDate(date);
+    (await getPricesForDate(date)) as any[];
 
   if (selectedDatePrices.length === 0) {
     throw new Error(
@@ -323,10 +323,10 @@ async function runPeriodScreener(
     to = getMonthEnd(date);
   }
 
-  const rows = await getPricesBetweenDates(
+  const rows = (await getPricesBetweenDates(
     from,
     to
-  );
+  )) as any[];
 
   if (rows.length === 0) {
     throw new Error(

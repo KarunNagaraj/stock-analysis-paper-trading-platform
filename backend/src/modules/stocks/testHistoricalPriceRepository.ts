@@ -2,7 +2,7 @@ import { getHistoricalPrices } from "./historicalPrice.repository.js";
 
 async function testRepository() {
     try {
-        const prices = await getHistoricalPrices("RELIANCE");
+        const prices = (await getHistoricalPrices("RELIANCE")) as any[];
 
         console.log(prices.slice(0, 5));
     } catch (error) {

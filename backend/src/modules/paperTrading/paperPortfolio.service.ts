@@ -48,13 +48,13 @@ export async function getPortfolio(userId: number) {
     for (const position of positions) {
 
         // position.stock_id -> stocks.id
-        const rows = await getStockById(position.stock_id);
+        const rows = (await getStockById(position.stock_id)) as any[];
 
         if (!rows || rows.length === 0) {
             continue;
         }
 
-        const stock = rows[0];
+        const stock = rows[0] as any;
 
         if (!stock.provider_symbol) {
             continue;

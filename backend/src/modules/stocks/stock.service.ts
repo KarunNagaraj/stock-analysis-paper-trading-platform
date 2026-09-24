@@ -23,14 +23,13 @@ export async function getStockBySymbolService(
         .trim()
         .toUpperCase();
 
-    const stocks =
-        await getStockBySymbol(normalizedSymbol);
+    const stocks = (await getStockBySymbol(normalizedSymbol)) as any[];
 
     if (stocks.length === 0) {
         throw new Error("Stock not found");
     }
 
-    const stock = stocks[0];
+    const stock = stocks[0] as any;
 
     if (!stock.provider_symbol) {
         throw new Error(

@@ -6,7 +6,9 @@ export async function getHistoricalPrices(
   res: Response
 ) {
   try {
-    const symbol = req.params.symbol;
+    const symbol = Array.isArray(req.params.symbol)
+      ? req.params.symbol[0]
+      : req.params.symbol;
 
     if (!symbol) {
       res.status(400).json({
