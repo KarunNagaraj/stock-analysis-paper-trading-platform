@@ -2,7 +2,6 @@ import express from "express";
 import router from "./routes/health.routes"
 import cors from "cors";
 import path from "path";
-import { fileURLToPath } from "url";
 import stockRouter from "./modules/stocks/stock.route.js";
 import screenerRoutes from "./modules/screener/screener.route.js";
 import authRouter from "./modules/auth/auth.route";
@@ -21,9 +20,7 @@ const corsOrigins = (process.env.CORS_ORIGIN ?? "")
   .map((origin) => origin.trim())
   .filter(Boolean);
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-const frontendDistPath = path.resolve(__dirname, "../../frontend/dist");
+const frontendDistPath = path.resolve(process.cwd(), "../frontend/dist");
 
 app.use(express.json());
 app.use(
